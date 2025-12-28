@@ -67,7 +67,7 @@ const DialogBox = ({ initialMessage = "" }: DialogBoxProps) => {
           hour: "2-digit",
           minute: "2-digit",
         }),
-        avatar: "🤖",
+        avatar: "ai-photo.jpg",
       };
 
       setMessages((prev) => [...prev, aiMessage]);
@@ -100,98 +100,83 @@ const DialogBox = ({ initialMessage = "" }: DialogBoxProps) => {
   };
 
   return (
-    <div className="flex flex-col max-h-[90vh] ">
-      <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
-        <div className="space-y-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${
-                message.sender === "ai" ? "justify-start" : "justify-end"
-              } gap-2`}
-            >
-              {message.sender === "ai" && (
-                <>
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                    <span className="text-sm">{message.avatar}</span>
-                  </div>
-                  <div className="max-w-[70%]">
-                    <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm">
-                      <p className="text-gray-800 whitespace-pre-wrap">
-                        {message.text}
-                      </p>
+    <div className="flex flex-col h-[calc(100%-64px)] pl-32 pr-32">
+      <div className="flex-1 p-4 overflow-y-auto [&::-webkit-scrollbar]:hidden">
+        <div className="space-y-2 max-w-4xl mx-auto">
+          <div className="text-center"></div>
+          {/* Сообщения */}
+          <div className="space-y-6">
+            {messages.map((message) => (
+              <div key={message.id}>
+                <div
+                  className={`flex justify-start mb-1 p-4 ml-40 mr-40 ${
+                    message.sender === "ai"
+                      ? "border border-solid rounded-lg"
+                      : ""
+                  }`}
+                >
+                  <div className="mr-3">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center border-2 border-white shadow">
+                      <img
+                        src={message.avatar}
+                        className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-md"
+                      />
                     </div>
-                    <span className="text-xs text-gray-500 mt-1 block ml-2">
-                      {message.timestamp}
-                    </span>
                   </div>
-                </>
-              )}
-
-              {message.sender === "user" && (
-                <>
-                  <div className="max-w-[70%] text-right">
-                    <div className="bg-blue-500 text-white rounded-2xl rounded-tr-none px-4 py-3">
-                      <p className="whitespace-pre-wrap">{message.text}</p>
+                  <div className="flex flex-col max-w-[80%]">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-sm">
+                        {message.sender === "user"
+                          ? "Mauro Sicard"
+                          : "LanguageGUI"}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {message.timestamp}
+                      </span>
                     </div>
-                    <span className="text-xs text-gray-500 mt-1 block mr-2">
-                      {message.timestamp}
-                    </span>
+                    <p className="text-gray-800 whitespace-pre-wrap text-sm">
+                      {message.text}
+                    </p>
                   </div>
-                  <img
-                    src={message.avatar}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                </>
-              )}
-            </div>
-          ))}
+                </div>
+              </div>
+            ))}
+          </div>
 
           {/* Якорь для автоматической прокрутки */}
           <div ref={messagesEndRef} />
         </div>
       </div>
 
-      {/* Поле ввода */}
-      <div className="border-t border-gray-200 p-4 bg-white">
-        <div className="flex gap-2">
-          <div className="flex-1 relative text-gray-500">
-            <textarea
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              onKeyDown={handleKeyPress}
-              placeholder="Введите сообщение..."
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-              rows={2}
-              disabled={isLoading}
-            />
-            <div className="absolute right-2 bottom-2 text-xs text-gray-400">
-              Enter для отправки
-            </div>
-          </div>
-          <button
-            onClick={() => handleSendMessage()}
-            disabled={isLoading || !inputText.trim()}
-            className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+      <div className="bg-white p-4 text-gray-500 border-t">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-end gap-2 border border-gray-300 rounded-2xl p-1 shadow-sm">
+            <div className="flex-1 pl-3">
+              <textarea
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                onKeyDown={handleKeyPress}
+                placeholder="How can I help you?"
+                className="w-full py-2 resize-none focus:outline-none text-sm"
+                rows={1}
+                disabled={isLoading}
+                style={{ minHeight: "40px", maxHeight: "100px" }}
               />
-            </svg>
-            Отправить
-          </button>
-        </div>
-        <div className="mt-2 text-xs text-gray-500 text-center">
-          AI может иногда ошибаться. Проверяйте важную информацию.
+            </div>
+            <button
+              onClick={() => handleSendMessage()}
+              disabled={isLoading || !inputText.trim()}
+              className="px-4 py-2.5 m-1 bg-blue-500 text-white rounded-xl hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2 text-sm font-medium"
+            >
+              <svg width="14" height="14" viewBox="0 0 11 11" fill="none">
+                <path
+                  d="M10.5164 0.262479C10.2772 0.023263 9.92882 -0.0594891 9.60894 0.0434294L0.622343 2.9321C0.280903 3.04197 0.044469 3.33126 0.00552683 3.688C-0.0334153 4.04404 0.135566 4.37783 0.445017 4.55794L3.62715 6.41395L6.37604 3.66435C6.5798 3.4606 6.91011 3.4606 7.11386 3.66435C7.31761 3.8681 7.31761 4.19842 7.11386 4.40217L4.36427 7.15176L6.22028 10.3339C6.38369 10.6134 6.67228 10.7782 6.99008 10.7782C7.02346 10.7782 7.05753 10.7762 7.09161 10.7727C7.44765 10.7337 7.73763 10.4973 7.84681 10.1566L10.7362 1.17067C10.8391 0.848697 10.7549 0.501 10.5164 0.262479Z"
+                  fill="currentColor"
+                />
+              </svg>
+              Send
+            </button>
+          </div>
         </div>
       </div>
     </div>

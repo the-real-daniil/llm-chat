@@ -34,17 +34,17 @@ const MainEmptyState = ({
             value={areaTextValue}
             onChange={(e) => setAreaTextValue(e.target.value)}
           />
-          <div
+          <button
+            disabled={!areaTextValue.trim()}
             className="absolute right-2 bottom-2"
             onClick={() => {
               console.log("Я отправил тебе письмо", areaTextValue);
               setVisible(false);
               setInitialMessage(areaTextValue);
-              //дальше делаем POST на адрес нейронки со значением areaTextValue
             }}
           >
             <PaperPlane />
-          </div>
+          </button>
         </div>
       </div>
     </div>
