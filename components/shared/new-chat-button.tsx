@@ -2,12 +2,13 @@
 import PlusImg from '../ui/plus-img';
 interface NewChatButtonProps {
   label: string;
+  onClickCreateChat:(value:boolean)=>void;
 }
-const NewChatButton: React.FC<NewChatButtonProps> = ({ label }) => {
+const NewChatButton: React.FC<NewChatButtonProps> = ({ label, onClickCreateChat }) => {
 
   const onClickNewChatButton = () => {
     console.log('Нажал создать чат');
-   
+   onClickCreateChat(true);
   };
   return (
     <button

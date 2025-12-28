@@ -1,8 +1,10 @@
 import ChatHistory from './chat-history';
 import NewChatButton from './new-chat-button';
 import ProfileBar from './profile-bar';
-
-const SideBar = () => {
+interface SideBarProps{
+  createNewChat: (value:boolean)=>void;
+}
+const SideBar = ({createNewChat}:SideBarProps) => {
   return (
     <div className=" w-[300px] h-full p-4 flex flex-col">
       <ProfileBar />
@@ -10,7 +12,7 @@ const SideBar = () => {
         <ChatHistory />
       </div>
 
-      <NewChatButton label="Start new chat" />
+      <NewChatButton label="Start new chat" onClickCreateChat={createNewChat}/>
     </div>
   );
 };

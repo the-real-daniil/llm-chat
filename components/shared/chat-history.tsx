@@ -1,5 +1,3 @@
-
-
 const ChatHistory = () => {
   const chats = ["chat 1", "chat 2", "chat 3"];
   return (
