@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 
-import PaperPlaneIcon from "../../../assets/icons/paper-plane-icon";
+import PaperPlaneIcon from "../../assets/icons/paper-plane-icon";
 import Button from "@/components/ui/button";
 
 interface MainEmptyStateProps {

@@ -1,5 +1,5 @@
 import PlusIcon from "@/assets/icons/plus-icon";
-import Button from "../../ui/button";
+import Button from "../ui/button";
 interface MainHeaderProps {
   setVisibleEmptyState: (value: boolean) => void;
 }

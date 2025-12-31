@@ -1,5 +1,5 @@
-import ClearIcon from "../../../assets/icons/clear-icon";
-import SetingIcon from "../../../assets/icons/setings-icon";
+import ClearIcon from "../../assets/icons/clear-icon";
+import SetingIcon from "../../assets/icons/setings-icon";
 
 const ProfileBar = () => {
   const name = "Mauro Sicard";

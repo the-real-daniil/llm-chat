@@ -1,0 +1,19 @@
+[33m31b8419[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32msprint-1/task-3/sending-message-getting-response[m[33m)[m HEAD@{0}: reset: moving to HEAD~1
+[33m215e7f0[m[33m ([m[1;31morigin/sprint-1/task-3/sending-message-getting-response[m[33m)[m HEAD@{1}: commit: Исправления по первым 3 таскам
+[33m31b8419[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32msprint-1/task-3/sending-message-getting-response[m[33m)[m HEAD@{2}: commit: Обновлена верстка чата
+[33m32f1172[m HEAD@{3}: commit: Отправка запросов нейронке и получение ответов
+[33mbd477da[m[33m ([m[1;31morigin/feature/side-bar[m[33m, [m[1;32mfeature/side-bar[m[33m)[m HEAD@{4}: checkout: moving from feature/side-bar to sprint-1/task-3/sending-message-getting-response
+[33mbd477da[m[33m ([m[1;31morigin/feature/side-bar[m[33m, [m[1;32mfeature/side-bar[m[33m)[m HEAD@{5}: checkout: moving from feature/side-bar to feature/side-bar
+[33mbd477da[m[33m ([m[1;31morigin/feature/side-bar[m[33m, [m[1;32mfeature/side-bar[m[33m)[m HEAD@{6}: merge sprint-1/task-2/create-main-area: Merge made by the 'ort' strategy.
+[33m2e3a4aa[m HEAD@{7}: checkout: moving from sprint-1/task-2/create-main-area to feature/side-bar
+[33m189e63f[m HEAD@{8}: commit: Верстка main-area
+[33m18517f4[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{9}: checkout: moving from main to sprint-1/task-2/create-main-area
+[33m18517f4[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{10}: checkout: moving from feature/side-bar to main
+[33m2e3a4aa[m HEAD@{11}: commit: Для отображения главной страницы
+[33m988db78[m HEAD@{12}: checkout: moving from feature/side-bar to feature/side-bar
+[33m988db78[m HEAD@{13}: commit: Попытался залить верстку сайд бара, вышло?
+[33m18517f4[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{14}: checkout: moving from main to feature/side-bar
+[33m18517f4[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{15}: checkout: moving from feature/sprint1 to main
+[33m18517f4[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{16}: checkout: moving from main to feature/sprint1
+[33m18517f4[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{17}: checkout: moving from main to main
+[33m18517f4[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{18}: clone: from https://github.com/the-real-daniil/llm-chat.git

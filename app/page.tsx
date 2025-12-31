@@ -1,7 +1,7 @@
 "use client";
 
-import MainArea from "@/components/shared/main-area";
-import SideBar from "@/components/shared/side-bar";
+import MainArea from "@/components/main-area";
+import SideBar from "@/components/side-bar";
 import { useState } from "react";
 
 export default function Home() {

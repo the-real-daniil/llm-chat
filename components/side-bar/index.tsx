@@ -1,5 +1,5 @@
 import ChatHistory from "./chat-history";
-import Button from "../../ui/button";
+import Button from "../ui/button";
 import ProfileBar from "./profile-bar";
 import PlusIcon from "@/assets/icons/plus-icon";
 interface SideBarProps {
