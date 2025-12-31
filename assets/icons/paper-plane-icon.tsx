@@ -1,11 +1,12 @@
-const PaperPlane = () => {
+const PaperPlaneIcon = () => {
   return (
     <svg
       width="52"
       height="52"
       viewBox="0 0 52 52"
       fill="none"
-      className="absolute right-0 transform -translate-y-12 hover:cursor-pointer">
+      className="absolute right-0"
+    >
       <g filter="url(#filter0_dii_14226_283)">
         <path
           d="M5 11C5 6.58172 8.58172 3 13 3H39C43.4183 3 47 6.58172 47 11V37C47 41.4183 43.4183 45 39 45H13C8.58172 45 5 41.4183 5 37V11Z"
@@ -28,7 +29,8 @@ const PaperPlane = () => {
           width="52"
           height="52"
           filterUnits="userSpaceOnUse"
-          colorInterpolationFilters="sRGB">
+          colorInterpolationFilters="sRGB"
+        >
           <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
@@ -43,7 +45,11 @@ const PaperPlane = () => {
             type="matrix"
             values="0 0 0 0 0.0803076 0 0 0 0 0.34601 0 0 0 0 0.786686 0 0 0 0.17 0"
           />
-          <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_14226_283" />
+          <feBlend
+            mode="normal"
+            in2="BackgroundImageFix"
+            result="effect1_dropShadow_14226_283"
+          />
           <feBlend
             mode="normal"
             in="SourceGraphic"
@@ -59,8 +65,15 @@ const PaperPlane = () => {
           <feOffset dy="2" />
           <feGaussianBlur stdDeviation="0.5" />
           <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1" />
-          <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.22 0" />
-          <feBlend mode="normal" in2="shape" result="effect2_innerShadow_14226_283" />
+          <feColorMatrix
+            type="matrix"
+            values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.22 0"
+          />
+          <feBlend
+            mode="normal"
+            in2="shape"
+            result="effect2_innerShadow_14226_283"
+          />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -86,7 +99,8 @@ const PaperPlane = () => {
           y1="3"
           x2="26"
           y2="45"
-          gradientUnits="userSpaceOnUse">
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stopColor="#2B7AFB" />
           <stop offset="1" stopColor="#2174FD" />
           <stop offset="1" stopColor="#213BFD" />
@@ -97,7 +111,8 @@ const PaperPlane = () => {
           y1="3"
           x2="26"
           y2="45"
-          gradientUnits="userSpaceOnUse">
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stopColor="#174BD2" />
           <stop offset="1" stopColor="#1B5AC2" />
         </linearGradient>
@@ -105,4 +120,4 @@ const PaperPlane = () => {
     </svg>
   );
 };
-export default PaperPlane;
+export default PaperPlaneIcon;

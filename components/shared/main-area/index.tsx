@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import DialogBox from "./dialog-box2";
+import DialogBox from "../dialog-box";
 import MainEmptyState from "./main-empty-state";
 import MainHeader from "./main-header";
 interface MainAreaProps {
@@ -12,13 +12,14 @@ const MainArea = ({
   setVisibleEmptyState,
 }: MainAreaProps) => {
   const [initialMessage, setInitialMessage] = useState("");
+
   return (
     <div className="flex-1 bg-white border border-solid border-gray-300 rounded-2xl shadow-sm">
-      <MainHeader setVisible={setVisibleEmptyState} />
+      <MainHeader setVisibleEmptyState={setVisibleEmptyState} />
 
       {visibleEmptyState ? (
         <MainEmptyState
-          setVisible={setVisibleEmptyState}
+          setVisibleEmptyState={setVisibleEmptyState}
           setInitialMessage={setInitialMessage}
         />
       ) : (

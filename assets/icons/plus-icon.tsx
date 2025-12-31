@@ -1,4 +1,4 @@
-const PlusImg = () => {
+const PlusIcon = () => {
   return (
     <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
       <path
@@ -11,4 +11,4 @@ const PlusImg = () => {
     </svg>
   );
 };
-export default PlusImg;
+export default PlusIcon;
