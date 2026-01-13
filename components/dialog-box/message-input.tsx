@@ -43,21 +43,7 @@ export const MessageInput = ({
               className="px-4 py-2.5 m-1 bg-blue-500 text-white rounded-xl hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2 text-sm font-medium"
               icon={<SendIcon />}
             />
-            <Button
-              label="Clear All"
-              onClickButton={() => {
-                if (
-                  typeof window !== "undefined" &&
-                  window.confirm(
-                    "Вы уверены, что хотите очистить все данные? Это действие нельзя отменить."
-                  )
-                ) {
-                  StorageService.clearLS();
-                  window.location.reload();
-                }
-              }}
-              className="px-4 py-2.5 m-1 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors flex items-center gap-2 text-sm font-medium"
-            />
+           
           </div>
         </div>
       </div>
