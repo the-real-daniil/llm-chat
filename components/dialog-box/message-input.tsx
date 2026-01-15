@@ -1,8 +1,6 @@
-// src/components/dialog-box/MessageInput.tsx
 "use client";
 import SendIcon from "@/assets/icons/send-icon";
 import Button from "@/components/ui/button";
-import { StorageService } from "@/utils/storage/localStorage";
 
 interface MessageInputProps {
   inputText: string;
@@ -43,7 +41,6 @@ export const MessageInput = ({
               className="px-4 py-2.5 m-1 bg-blue-500 text-white rounded-xl hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2 text-sm font-medium"
               icon={<SendIcon />}
             />
-           
           </div>
         </div>
       </div>

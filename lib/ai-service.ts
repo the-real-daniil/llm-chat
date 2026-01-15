@@ -30,7 +30,6 @@ export async function sendToAI(content: string): Promise<string> {
   const model = process.env.NEXT_PUBLIC_OPENROUTER_MODEL;
   const baseUrl = "https://openrouter.ai/api/v1";
 
-  // Валидация переменных окружения
   if (!apiKey) {
     throw new AIError(
       "API ключ не настроен. Установите NEXT_PUBLIC_OPENROUTER_API_KEY в переменных окружения.",
@@ -88,7 +87,8 @@ export async function sendToAI(content: string): Promise<string> {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new AIError(
-        errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`,
+        errorData.error?.message ||
+          `HTTP ${response.status}: ${response.statusText}`,
         "API_ERROR",
         response.status
       );
@@ -117,10 +117,7 @@ export async function sendToAI(content: string): Promise<string> {
           "TIMEOUT"
         );
       }
-      throw new AIError(
-        `Ошибка соединения: ${err.message}`,
-        "NETWORK_ERROR"
-      );
+      throw new AIError(`Ошибка соединения: ${err.message}`, "NETWORK_ERROR");
     }
 
     throw new AIError("Неизвестная ошибка при отправке запроса", "UNKNOWN");

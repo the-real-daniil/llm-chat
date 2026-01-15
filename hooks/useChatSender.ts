@@ -29,7 +29,6 @@ export const useChatSender = () => {
                 "UNKNOWN"
               );
 
-        // Создаем сообщение об ошибке с более информативным текстом
         const errorMessage = MessageFactory.createAIMessage(
           `Ошибка: ${aiError.message}`
         );

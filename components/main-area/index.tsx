@@ -1,9 +1,6 @@
 "use client";
-import { useState } from "react";
-import DialogBox from "../dialog-box";
 import MainEmptyState from "./main-empty-state";
 import MainHeader from "./main-header";
-import Link from "next/link";
 
 const MainArea = () => {
   return (

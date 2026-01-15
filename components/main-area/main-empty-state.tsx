@@ -19,10 +19,8 @@ const MainEmptyState = () => {
     setIsSending(true);
 
     try {
-      // Отправляем сообщение и создаем чат если нужно
       const chatId = await sendMessageWithText(textToSend);
-      
-      // Переходим на страницу чата
+
       if (chatId) {
         router.push(`/chat?chat=${chatId}`);
       } else {

@@ -1,31 +1,28 @@
-// components/side-bar/index.tsx
 "use client";
-import ChatHistory from "./chat-history";
 import Button from "../ui/button";
 import ProfileBar from "./profile-bar";
 import PlusIcon from "@/assets/icons/plus-icon";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useChat } from "@/hooks/useChat";
 import { useState, useEffect } from "react";
-import { StorageService, ChatInfo } from "@/utils/storage/localStorage";
+import { ChatInfo } from "@/utils/storage/MessageStorageService";
+import { useStorage } from "@/utils/storage/storageContext";
 
 const SideBar = () => {
+  const storage = useStorage();
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const { createNewChat, loadChat, activeChatId, clearActiveChat } = useChat();
+
+  const { loadChat, activeChatId, clearActiveChat } = useChat();
   const [chats, setChats] = useState<ChatInfo[]>([]);
 
-  // Загружаем список чатов
   useEffect(() => {
     const loadChats = () => {
-      const loadedChats = StorageService.getChatsList();
+      const loadedChats = storage.getChatsList();
       setChats(loadedChats);
     };
 
     loadChats();
 
-    // Слушаем изменения в localStorage
     const handleStorageChange = () => {
       loadChats();
     };
@@ -35,28 +32,22 @@ const SideBar = () => {
   }, []);
 
   const handleNewChat = () => {
-    // Активный чат остается сохраненным в localStorage
-    // Просто переходим на главную страницу для отображения empty state
     router.push("/");
   };
 
   const handleOpenChat = (chatId: string) => {
     loadChat(chatId);
 
-    // Всегда переходим на страницу /chat с параметром chat
     router.push(`/chat?chat=${chatId}`);
   };
 
-  // Удаление чата
   const handleDeleteChat = (chatId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    StorageService.deleteChat(chatId);
+    storage.deleteChat(chatId);
 
-    // Обновляем список
-    const updatedChats = StorageService.getChatsList();
+    const updatedChats = storage.getChatsList();
     setChats(updatedChats);
 
-    // Если удаляем активный чат, очищаем его и показываем empty state
     if (activeChatId === chatId) {
       clearActiveChat();
       router.push("/");

@@ -1,14 +1,13 @@
 import { Message } from "@/types/chat";
-import { StorageService } from "@/utils/storage/localStorage";
+import { useStorage } from "@/utils/storage/storageContext";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export const useChatMessages = (chatId?: string | null) => {
+  const storage = useStorage();
   const [messages, setMessages] = useState<Message[]>([]);
-  // Начальное состояние isLoading зависит от наличия chatId
   const [isLoading, setIsLoading] = useState(!!chatId);
-  const prevChatIdRef = useRef<string | null | undefined>(null); // Следим за предыдущим chatId
+  const prevChatIdRef = useRef<string | null | undefined>(null);
 
-  // Загрузка сообщений при изменении chatId
   useEffect(() => {
     const loadMessages = async () => {
       if (!chatId) {
@@ -19,12 +18,10 @@ export const useChatMessages = (chatId?: string | null) => {
 
       setIsLoading(true);
       try {
-
-        const loadedMessages = StorageService.loadMessages(chatId);
+        const loadedMessages = storage.loadMessages(chatId);
 
         setMessages(loadedMessages);
       } catch (error) {
-
         setMessages([]);
       } finally {
         setIsLoading(false);
@@ -38,13 +35,12 @@ export const useChatMessages = (chatId?: string | null) => {
     }
   }, [chatId]);
 
-  // Добавление сообщения
   const addMessage = useCallback((id: string, message: Message) => {
     setMessages((prevMessages) => {
       const updatedMessages = [...prevMessages, message];
 
       try {
-        StorageService.saveMessages(id, updatedMessages);
+        storage.saveMessages(id, updatedMessages);
       } catch (error) {
         console.error("Ошибка сохранения:", error);
       }
@@ -53,23 +49,21 @@ export const useChatMessages = (chatId?: string | null) => {
     });
   }, []);
 
-  // Очистка сообщений
   const clearMessages = useCallback((id: string) => {
     setMessages([]);
     try {
-      StorageService.saveMessages(id, []);
+      storage.saveMessages(id, []);
     } catch (error) {
       console.error("Ошибка очистки:", error);
     }
   }, []);
 
-  // Принудительная перезагрузка сообщений
   const reloadMessages = useCallback(() => {
     if (!chatId) return;
 
     setIsLoading(true);
     try {
-      const loadedMessages = StorageService.loadMessages(chatId);
+      const loadedMessages = storage.loadMessages(chatId);
       setMessages(loadedMessages);
     } catch (error) {
       console.error("Ошибка перезагрузки сообщений:", error);
@@ -83,7 +77,7 @@ export const useChatMessages = (chatId?: string | null) => {
     isLoading,
     addMessage,
     clearMessages,
-    reloadMessages, 
+    reloadMessages,
     messageCount: messages.length,
   };
 };

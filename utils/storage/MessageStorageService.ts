@@ -1,4 +1,3 @@
-// utils/storage/localStorage.ts
 import { Message } from "@/types/chat";
 import { STORAGE_KEYS } from "../constants";
 
@@ -9,15 +8,46 @@ export interface ChatInfo {
   lastMessage?: string;
   messageCount: number;
 }
+interface IStorge {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+  removeItem(key: string): void;
+  clear(): void;
+  readonly length: number;
+  key(index: number): string | null;
+}
 
-export class StorageService {
-  // Сохранение сообщений и обновление информации о чате
-  static saveMessages(chatId: string, messages: Message[]): void {
+const localStorageProvider: IStorge = {
+  getItem(key: string): string | null {
+    return localStorage.getItem(key);
+  },
+  setItem(key: string, value: string): void {
+    localStorage.setItem(key, value);
+  },
+  removeItem(key: string): void {
+    localStorage.removeItem(key);
+  },
+  clear(): void {
+    localStorage.clear();
+  },
+  get length(): number {
+    return localStorage.length;
+  },
+  key(index: number): string | null {
+    return localStorage.key(index);
+  },
+};
+
+export class MessageStorageService {
+  private storage: IStorge;
+  constructor(storage: IStorge = localStorageProvider) {
+    this.storage = storage;
+  }
+  saveMessages(chatId: string, messages: Message[]): void {
     try {
       const key = `${STORAGE_KEYS.CHAT_PREFIX}${chatId}`;
-      localStorage.setItem(key, JSON.stringify(messages));
+      this.storage.setItem(key, JSON.stringify(messages));
 
-      // ОБНОВЛЯЕМ ИНФОРМАЦИЮ О ЧАТЕ
       this.updateChatInfo(chatId, messages);
 
       console.log(`Сохранено ${messages.length} сообщений для чата ${chatId}`);
@@ -26,23 +56,22 @@ export class StorageService {
     }
   }
 
-  // Обновление информации о чате
-  static updateChatInfo(chatId: string, messages: Message[]): void {
+  updateChatInfo(chatId: string, messages: Message[]): void {
     try {
       const chats = this.getChatsList();
 
-      // Если в чате нет сообщений, удаляем его из списка (если он там есть)
       if (messages.length === 0) {
         const filteredChats = chats.filter((chat) => chat.id !== chatId);
-        localStorage.setItem(STORAGE_KEYS.CHATS_LIST, JSON.stringify(filteredChats));
+        this.storage.setItem(
+          STORAGE_KEYS.CHATS_LIST,
+          JSON.stringify(filteredChats)
+        );
         return;
       }
 
-      // Находим или создаем чат
       let chatInfo = chats.find((chat) => chat.id === chatId);
 
       if (!chatInfo) {
-        // Создаем новый чат только если есть сообщения
         chatInfo = {
           id: chatId,
           title: this.generateChatTitle(messages),
@@ -51,16 +80,14 @@ export class StorageService {
             messages.length > 0 ? messages[messages.length - 1].text : "",
           messageCount: messages.length,
         };
-        chats.unshift(chatInfo); // Новые чаты в начало
+        chats.unshift(chatInfo);
       } else {
-        // Обновляем существующий чат
         chatInfo.title = this.generateChatTitle(messages);
         chatInfo.updatedAt = Date.now();
         chatInfo.lastMessage =
           messages.length > 0 ? messages[messages.length - 1].text : "";
         chatInfo.messageCount = messages.length;
 
-        // Перемещаем обновленный чат в начало
         const index = chats.indexOf(chatInfo);
         if (index > 0) {
           chats.splice(index, 1);
@@ -68,18 +95,15 @@ export class StorageService {
         }
       }
 
-      // Сохраняем обновленный список чатов
-      localStorage.setItem(STORAGE_KEYS.CHATS_LIST, JSON.stringify(chats));
+      this.storage.setItem(STORAGE_KEYS.CHATS_LIST, JSON.stringify(chats));
     } catch (error) {
       console.error("Ошибка обновления информации о чате:", error);
     }
   }
 
-  // Генерация заголовка чата на основе сообщений
-  private static generateChatTitle(messages: Message[]): string {
+  private generateChatTitle(messages: Message[]): string {
     if (messages.length === 0) return "New Chat";
 
-    // Используем первое пользовательское сообщение как заголовок
     const firstUserMessage = messages.find((msg) => msg.sender === "user");
     if (firstUserMessage) {
       const text = firstUserMessage.text;
@@ -89,23 +113,23 @@ export class StorageService {
     return `Chat with ${messages.length} messages`;
   }
 
-  // Получение списка всех чатов
-  static getChatsList(): ChatInfo[] {
+  getChatsList(): ChatInfo[] {
     try {
-      const data = localStorage.getItem(STORAGE_KEYS.CHATS_LIST);
+      const data = this.storage.getItem(STORAGE_KEYS.CHATS_LIST);
       const chats: ChatInfo[] = data ? JSON.parse(data) : [];
-      
-      // Фильтруем чаты без сообщений
+
       const validChats = chats.filter((chat) => {
         const messages = this.loadMessages(chat.id);
         return messages.length > 0;
       });
-      
-      // Если были удалены пустые чаты, сохраняем обновленный список
+
       if (validChats.length !== chats.length) {
-        localStorage.setItem(STORAGE_KEYS.CHATS_LIST, JSON.stringify(validChats));
+        this.storage.setItem(
+          STORAGE_KEYS.CHATS_LIST,
+          JSON.stringify(validChats)
+        );
       }
-      
+
       return validChats;
     } catch (error) {
       console.error("Ошибка загрузки списка чатов:", error);
@@ -113,17 +137,14 @@ export class StorageService {
     }
   }
 
-  // Удаление чата
-  static deleteChat(chatId: string): void {
+  deleteChat(chatId: string): void {
     try {
-      // Удаляем сообщения чата
       const key = `${STORAGE_KEYS.CHAT_PREFIX}${chatId}`;
-      localStorage.removeItem(key);
+      this.storage.removeItem(key);
 
-      // Удаляем из списка чатов
       const chats = this.getChatsList();
       const filteredChats = chats.filter((chat) => chat.id !== chatId);
-      localStorage.setItem(
+      this.storage.setItem(
         STORAGE_KEYS.CHATS_LIST,
         JSON.stringify(filteredChats)
       );
@@ -132,31 +153,30 @@ export class StorageService {
     }
   }
 
-  // Остальные методы остаются без изменений...
-  static loadMessages(chatId: string): Message[] {
+  loadMessages(chatId: string): Message[] {
     try {
       const key = `${STORAGE_KEYS.CHAT_PREFIX}${chatId}`;
-      const data = localStorage.getItem(key);
+      const data = this.storage.getItem(key);
       return data ? JSON.parse(data) : [];
     } catch (err) {
-      console.error("Ошибка загрузки из localStorage:", err);
+      console.error("Ошибка загрузки из this.storage:", err);
       return [];
     }
   }
 
-  static saveActiveChat(chatId: string): void {
-    localStorage.setItem(STORAGE_KEYS.ACTIVE_CHAT, chatId);
+  saveActiveChat(chatId: string): void {
+    this.storage.setItem(STORAGE_KEYS.ACTIVE_CHAT, chatId);
   }
 
-  static getActiveChat(): string | null {
-    return localStorage.getItem(STORAGE_KEYS.ACTIVE_CHAT);
+  getActiveChat(): string | null {
+    return this.storage.getItem(STORAGE_KEYS.ACTIVE_CHAT);
   }
 
-  static clearActiveChat(): void {
-    localStorage.removeItem(STORAGE_KEYS.ACTIVE_CHAT);
+  clearActiveChat(): void {
+    this.storage.removeItem(STORAGE_KEYS.ACTIVE_CHAT);
   }
 
-  static clearLS(): void {
-    localStorage.clear();
+  clearLS(): void {
+    this.storage.clear();
   }
 }

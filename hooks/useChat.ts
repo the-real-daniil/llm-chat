@@ -2,11 +2,12 @@ import { useCallback, useState, useEffect } from "react";
 import { MessageFactory } from "@/utils/messageFactory";
 import { useChatMessages } from "./useChatMessages";
 import { useChatSender } from "./useChatSender";
-import { StorageService } from "@/utils/storage/localStorage";
 import { STORAGE_KEYS } from "@/utils/constants";
 import { useSearchParams } from "next/navigation";
+import { useStorage } from "@/utils/storage/storageContext";
 
 export const useChat = () => {
+  const storage = useStorage();
   const [inputText, setInputText] = useState("");
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const searchParams = useSearchParams();
@@ -18,23 +19,18 @@ export const useChat = () => {
   } = useChatMessages(activeChatId);
   const { isSending, sendMessage } = useChatSender();
 
-  // Загрузка активного чата при монтировании и из URL
   useEffect(() => {
-    // Проверяем URL параметры
     try {
       const urlChatId = searchParams?.get("chat");
       if (urlChatId) {
         setActiveChatId(urlChatId);
-        StorageService.saveActiveChat(urlChatId);
+        storage.saveActiveChat(urlChatId);
         return;
       }
-    } catch (error) {
-
-    }
+    } catch (error) {}
     setActiveChatId(null);
   }, [searchParams]);
 
-  // Создание нового чата с начальной записью
   const createNewChat = useCallback(() => {
     const newChatId = `chat_${Date.now()}`;
 
@@ -46,9 +42,8 @@ export const useChat = () => {
     }
 
     setActiveChatId(newChatId);
-    StorageService.saveActiveChat(newChatId);
+    storage.saveActiveChat(newChatId);
 
-    // Принудительно обновляем UI
     setTimeout(() => {
       window.dispatchEvent(new Event("storage"));
     }, 100);
@@ -56,45 +51,37 @@ export const useChat = () => {
     return newChatId;
   }, []);
 
-  // Отправка сообщения
   const handleSend = useCallback(async () => {
     const textToSend = inputText.trim();
     if (!textToSend) return;
 
-    // Если нет активного чата, создаем новый
     let chatId = activeChatId;
     if (!chatId) {
       chatId = createNewChat();
     }
 
-    // Создаем сообщение пользователя
     const userMessage = MessageFactory.createUserMessage(textToSend);
     addMessage(chatId, userMessage);
     setInputText("");
 
-    // Отправляем AI
     await sendMessage(textToSend, (aiMessage) => {
       addMessage(chatId, aiMessage);
     });
   }, [inputText, activeChatId, addMessage, sendMessage, createNewChat]);
 
-  // Отправка сообщения с текстом (для использования из других компонентов)
   const sendMessageWithText = useCallback(
     async (text: string) => {
       const textToSend = text.trim();
       if (!textToSend) return;
 
-      // Если нет активного чата, создаем новый
       let chatId = activeChatId;
       if (!chatId) {
         chatId = createNewChat();
       }
 
-      // Создаем сообщение пользователя
       const userMessage = MessageFactory.createUserMessage(textToSend);
       addMessage(chatId, userMessage);
 
-      // Отправляем AI
       await sendMessage(textToSend, (aiMessage) => {
         addMessage(chatId, aiMessage);
       });
@@ -104,7 +91,6 @@ export const useChat = () => {
     [activeChatId, addMessage, sendMessage, createNewChat]
   );
 
-  // Обработка нажатия клавиши
   const handleKeyPress = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === "Enter" && !e.shiftKey) {
@@ -115,26 +101,22 @@ export const useChat = () => {
     [handleSend]
   );
 
-  // Загрузка конкретного чата
   const loadChat = useCallback((chatId: string) => {
     setActiveChatId(chatId);
-    StorageService.saveActiveChat(chatId);
+    storage.saveActiveChat(chatId);
   }, []);
 
-  // Очистка активного чата
   const clearActiveChat = useCallback(() => {
     setActiveChatId(null);
-    StorageService.clearActiveChat();
+    storage.clearActiveChat();
   }, []);
 
   return {
-    // Состояние
     messages,
     isLoading: isLoadingMessages || isSending,
     inputText,
     activeChatId,
 
-    // Действия
     setInputText,
     handleSend,
     handleKeyPress,
