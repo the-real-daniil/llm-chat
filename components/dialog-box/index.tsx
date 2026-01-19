@@ -1,8 +1,10 @@
 "use client";
+
 import { useEffect, useRef } from "react";
 import { useChat } from "@/hooks/useChat";
 import { MessagesList } from "./messages-list";
 import { MessageInput } from "./message-input";
+import MainHeader from "../main-area/main-header";
 
 const DialogBox = () => {
   const {
@@ -14,33 +16,34 @@ const DialogBox = () => {
     handleKeyPress,
   } = useChat();
 
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTo({
-        top: messagesContainerRef.current.scrollHeight,
-        behavior: "smooth",
-      });
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
 
   return (
-    <div className="flex flex-col h-[calc(100%-64px)]">
-      <div
-        ref={messagesContainerRef}
-        className="flex-1 p-4 overflow-y-auto [&::-webkit-scrollbar]:hidden"
-      >
-        <MessagesList messages={messages} />
+    <div className="flex-1 flex flex-col h-full">
+      <div className="flex-shrink-0  bg-white z-10">
+        <MainHeader />
       </div>
 
-      <MessageInput
-        inputText={inputText}
-        isLoading={isLoading}
-        onInputChange={setInputText}
-        onSend={handleSend}
-        onKeyPress={handleKeyPress}
-      />
+      <div className="flex-1 overflow-y-auto px-8 md:px-32 lg:px-40 py-4">
+        <MessagesList messages={messages} />
+        <div ref={messagesEndRef} />
+      </div>
+
+      <div className="flex-shrink-0  bg-white z-10">
+        <MessageInput
+          inputText={inputText}
+          isLoading={isLoading}
+          onInputChange={setInputText}
+          onSend={handleSend}
+          onKeyPress={handleKeyPress}
+        />
+      </div>
     </div>
   );
 };

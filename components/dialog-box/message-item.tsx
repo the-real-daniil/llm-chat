@@ -7,34 +7,29 @@ interface MessageItemProps {
 
 const MessageItem = memo(({ message }: MessageItemProps) => {
   return (
-    <div>
-      <div
-        className={`flex justify-start mb-1 p-4 px-8 md:px-32 lg:px-40 ${
-          message.sender === "ai"
-            ? "border border-gray-300 border-solid rounded-lg shadow"
-            : ""
-        }`}
-      >
-        <div className="mr-3">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center border-2 border-white shadow">
-            <img
-              src={message.avatar}
-              alt={message.sender === "user" ? "User avatar" : "AI avatar"}
-              className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-md"
-            />
-          </div>
+    <div
+      className={`flex items-start gap-3 px-4 py-2 max-w-full ${
+        message.sender === "ai" ? "border border-gray-200 rounded-lg" : ""
+      }`}
+    >
+      <div className="flex-shrink-0 w-8 h-8">
+        <img
+          src={message.avatar}
+          alt={message.sender === "user" ? "User avatar" : "AI avatar"}
+          className="w-8 h-8 rounded-full object-cover border border-white shadow"
+        />
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="font-medium text-sm text-gray-900">
+            {message.sender === "user" ? "Вы" : "AI"}
+          </span>
+          <span className="text-xs text-gray-500">{message.timestamp}</span>
         </div>
-        <div className="flex flex-col max-w-[80%]">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-medium text-sm">
-              {message.sender === "user" ? "Mauro Sicard" : "LanguageGUI"}
-            </span>
-            <span className="text-xs text-gray-500">{message.timestamp}</span>
-          </div>
-          <p className="text-gray-500 whitespace-pre-wrap text-sm">
-            {message.text}
-          </p>
-        </div>
+        <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap break-words">
+          {message.text}
+        </p>
       </div>
     </div>
   );
