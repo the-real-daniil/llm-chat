@@ -26,7 +26,9 @@ export class AIError extends Error {
 }
 
 export async function sendToAI(content: string): Promise<string> {
-  const apiKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
+  const apiKey = localStorage.getItem("openrouter_api_key");
+  // || process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
+
   const model = process.env.NEXT_PUBLIC_OPENROUTER_MODEL;
   const baseUrl = "https://openrouter.ai/api/v1";
 

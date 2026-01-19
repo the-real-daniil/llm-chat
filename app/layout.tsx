@@ -33,7 +33,6 @@ export default function RootLayout({
         <StorageProvider>
           <div className="h-screen bg-gray-100 flex p-3">
             <SideBar />
-
             {children}
           </div>
         </StorageProvider>

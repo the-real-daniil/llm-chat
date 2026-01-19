@@ -43,6 +43,7 @@ export class MessageStorageService {
   constructor(storage: IStorge = localStorageProvider) {
     this.storage = storage;
   }
+
   saveMessages(chatId: string, messages: Message[]): void {
     try {
       const key = `${STORAGE_KEYS.CHAT_PREFIX}${chatId}`;
