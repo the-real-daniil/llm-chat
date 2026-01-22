@@ -12,8 +12,7 @@ const DialogBox = () => {
     isLoading,
     inputText,
     setInputText,
-    handleSend,
-    handleKeyPress,
+    handleSendWithFilesAndText,
   } = useChat();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -40,8 +39,7 @@ const DialogBox = () => {
           inputText={inputText}
           isLoading={isLoading}
           onInputChange={setInputText}
-          onSend={handleSend}
-          onKeyPress={handleKeyPress}
+          handleSendWithFilesAndText={handleSendWithFilesAndText}
         />
       </div>
     </div>

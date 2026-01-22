@@ -27,9 +27,50 @@ const MessageItem = memo(({ message }: MessageItemProps) => {
           </span>
           <span className="text-xs text-gray-500">{message.timestamp}</span>
         </div>
-        <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap break-words">
-          {message.text}
-        </p>
+        <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap break-words">
+          {message.content.map((item, index) => {
+            if (item.type === "text") {
+              return (
+                <div key={index} className="mb-1">
+                  {item.text}
+                </div>
+              );
+            }
+            if (item.type === "file" && item.file) {
+              return (
+                <div
+                  key={index}
+                  className="mb-2 p-2 bg-gray-50 rounded border border-gray-200"
+                >
+                  <div className="flex items-center gap-2">
+                    {item.file.type === "pdf" ? (
+                      "📄"
+                    ) : item.file.type === "image" ? (
+                      <div className="mt-2">
+                        <img
+                          src={item.image_url?.url}
+                          alt="Загруженное изображение"
+                          className="max-w-full h-auto riunded-lg border border-gray-200"
+                          style={{ maxHeight: "400px" }}
+                        />
+                      </div>
+                    ) : (
+                      "📎"
+                    )}
+                    <span className="font-medium text-xs">
+                      {item.file.name}
+                    </span>
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Прикрепленный файл
+                  </div>
+                </div>
+              );
+            }
+
+            return null;
+          })}
+        </div>
       </div>
     </div>
   );

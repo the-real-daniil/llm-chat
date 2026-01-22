@@ -4,13 +4,15 @@ import PaperPlaneIcon from "../../assets/icons/paper-plane-icon";
 import Button from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useChat } from "@/hooks/useChat";
+import { useStorage } from "@/utils/storage/storageContext";
 
 const MainEmptyState = () => {
   const name = "Mauro Sicard";
   const [areaTextValue, setAreaTextValue] = useState("");
   const [isSending, setIsSending] = useState(false);
   const router = useRouter();
-  const { sendMessageWithText } = useChat();
+  const { handleSendWithFilesAndText, createNewChat } = useChat();
+  const storage = useStorage();
 
   const handleSend = async () => {
     const textToSend = areaTextValue.trim();
@@ -19,13 +21,15 @@ const MainEmptyState = () => {
     setIsSending(true);
 
     try {
-      const chatId = await sendMessageWithText(textToSend);
-
-      if (chatId) {
-        router.push(`/chat?chat=${chatId}`);
-      } else {
-        router.push("/chat");
+      let chatId = storage.getActiveChat();
+      if (!chatId) {
+        chatId = createNewChat(); // создаёт чат и сохраняет в storage
       }
+      await handleSendWithFilesAndText(textToSend, []);
+
+      router.push(`/chat?chat=${chatId}`);
+    } catch (err) {
+      console.error("Ошибка отправки:", err);
     } finally {
       setIsSending(false);
     }

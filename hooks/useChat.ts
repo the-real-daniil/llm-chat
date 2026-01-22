@@ -50,55 +50,37 @@ export const useChat = () => {
 
     return newChatId;
   }, []);
+  const handleSendWithFilesAndText = useCallback(
+    async (text: string, files: File[]) => {
+      if (!text.trim() && files.length === 0) return;
 
-  const handleSend = useCallback(async () => {
-    const textToSend = inputText.trim();
-    if (!textToSend) return;
+      try {
+        const attachments = files.length
+          ? await Promise.all(
+              files.map((file) => MessageFactory.createFileAttachment(file))
+            )
+          : undefined;
 
-    let chatId = activeChatId;
-    if (!chatId) {
-      chatId = createNewChat();
-    }
+        let chatId = activeChatId;
+        if (!chatId) {
+          chatId = createNewChat();
+        }
 
-    const userMessage = MessageFactory.createUserMessage(textToSend);
-    addMessage(chatId, userMessage);
-    setInputText("");
+        const userMessage = MessageFactory.createUserMessage(
+          text.trim(),
+          attachments
+        );
+        addMessage(chatId, userMessage);
+        setInputText("");
 
-    await sendMessage(textToSend, (aiMessage) => {
-      addMessage(chatId, aiMessage);
-    });
-  }, [inputText, activeChatId, addMessage, sendMessage, createNewChat]);
-
-  const sendMessageWithText = useCallback(
-    async (text: string) => {
-      const textToSend = text.trim();
-      if (!textToSend) return;
-
-      let chatId = activeChatId;
-      if (!chatId) {
-        chatId = createNewChat();
+        await sendMessage(text.trim(), attachments || [], (aiMessage) => {
+          addMessage(chatId, aiMessage);
+        });
+      } catch (error) {
+        console.error("Ошибка отправки:", error);
       }
-
-      const userMessage = MessageFactory.createUserMessage(textToSend);
-      addMessage(chatId, userMessage);
-
-      await sendMessage(textToSend, (aiMessage) => {
-        addMessage(chatId, aiMessage);
-      });
-
-      return chatId;
     },
     [activeChatId, addMessage, sendMessage, createNewChat]
-  );
-
-  const handleKeyPress = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        handleSend();
-      }
-    },
-    [handleSend]
   );
 
   const loadChat = useCallback((chatId: string) => {
@@ -118,11 +100,9 @@ export const useChat = () => {
     activeChatId,
 
     setInputText,
-    handleSend,
-    handleKeyPress,
     createNewChat,
     loadChat,
     clearActiveChat,
-    sendMessageWithText,
+    handleSendWithFilesAndText,
   };
 };

@@ -37,7 +37,10 @@ const localStorageProvider: IStorge = {
     return localStorage.key(index);
   },
 };
-
+const getMessageText = (message: Message): string => {
+  const textContent = message.content?.find((item) => item.type === "text");
+  return textContent?.text || "";
+};
 export class MessageStorageService {
   private storage: IStorge;
   constructor(storage: IStorge = localStorageProvider) {
@@ -78,7 +81,9 @@ export class MessageStorageService {
           title: this.generateChatTitle(messages),
           updatedAt: Date.now(),
           lastMessage:
-            messages.length > 0 ? messages[messages.length - 1].text : "",
+            messages.length > 0
+              ? getMessageText(messages[messages.length - 1])
+              : "",
           messageCount: messages.length,
         };
         chats.unshift(chatInfo);
@@ -86,7 +91,9 @@ export class MessageStorageService {
         chatInfo.title = this.generateChatTitle(messages);
         chatInfo.updatedAt = Date.now();
         chatInfo.lastMessage =
-          messages.length > 0 ? messages[messages.length - 1].text : "";
+          messages.length > 0
+            ? getMessageText(messages[messages.length - 1])
+            : "";
         chatInfo.messageCount = messages.length;
 
         const index = chats.indexOf(chatInfo);
@@ -107,7 +114,7 @@ export class MessageStorageService {
 
     const firstUserMessage = messages.find((msg) => msg.sender === "user");
     if (firstUserMessage) {
-      const text = firstUserMessage.text;
+      const text = getMessageText(firstUserMessage);
       return text.length > 30 ? text.substring(0, 30) + "..." : text;
     }
 

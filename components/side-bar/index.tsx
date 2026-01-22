@@ -32,6 +32,7 @@ const SideBar = () => {
   }, []);
 
   const handleNewChat = () => {
+    storage.clearActiveChat();
     router.push("/");
   };
 

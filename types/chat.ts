@@ -1,6 +1,26 @@
+export interface FileAttachment {
+  name: string;
+  type: string;
+  size: number;
+  file: File;
+  base64: string;
+}
+export interface MessageContent {
+  type: "text" | "file" | "image_url" | "input_audio";
+  text?: string;
+  file?: FileAttachment;
+  image_url?: {
+    url: string;
+  };
+  input_audio?: {
+    data: string;
+    format: string;
+  };
+}
+
 export interface Message {
   id: number;
-  text: string;
+  content: MessageContent[];
   sender: "user" | "ai";
   timestamp: string;
   avatar: string;

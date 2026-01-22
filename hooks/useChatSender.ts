@@ -1,5 +1,5 @@
 import { sendToAI, AIError } from "@/lib/ai-service";
-import { Message } from "@/types/chat";
+import { FileAttachment, Message } from "@/types/chat";
 import { MessageFactory } from "@/utils/messageFactory";
 import { useCallback, useState } from "react";
 
@@ -9,15 +9,16 @@ export const useChatSender = () => {
   const sendMessage = useCallback(
     async (
       text: string,
+      files: FileAttachment[],
       onSuccess: (message: Message) => void,
       onError?: (error: AIError) => void
     ): Promise<void> => {
-      if (!text.trim() || isSending) return;
+      if (!text.trim() && files.length === 0) return;
 
       setIsSending(true);
 
       try {
-        const aiResponseText = await sendToAI(text);
+        const aiResponseText = await sendToAI(text, files);
         const aiMessage = MessageFactory.createAIMessage(aiResponseText);
         onSuccess(aiMessage);
       } catch (error) {
@@ -43,9 +44,19 @@ export const useChatSender = () => {
     },
     [isSending]
   );
-
+  const sendTextOnly = useCallback(
+    async (
+      text: string,
+      onSuccess: (message: Message) => void,
+      onError?: (error: AIError) => void
+    ) => {
+      return sendMessage(text, [], onSuccess, onError);
+    },
+    [sendMessage]
+  );
   return {
     isSending,
     sendMessage,
+    sendTextOnly,
   };
 };
