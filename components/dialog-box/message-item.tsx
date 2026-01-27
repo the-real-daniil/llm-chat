@@ -3,6 +3,7 @@ import { memo } from "react";
 import Button from "../ui/button";
 import CopyIcon from "@/assets/icons/copy-icon";
 import ReplayIcon from "@/assets/icons/reply-icon";
+import Image from "next/image";
 
 interface MessageItemProps {
   message: Message;
@@ -62,8 +63,10 @@ const MessageItem = memo(({ message }: MessageItemProps) => {
       }`}
     >
       <div className="flex-shrink-0 w-8 h-8">
-        <img
+        <Image
           src={message.avatar}
+          width={4}
+          height={4}
           alt={message.sender === "user" ? "User avatar" : "AI avatar"}
           className="w-8 h-8 rounded-full object-cover border border-white shadow"
         />
@@ -109,11 +112,12 @@ const MessageItem = memo(({ message }: MessageItemProps) => {
             if (item.type === "image_url" && item.image_url?.url) {
               return (
                 <div key={index} className="mt-2">
-                  <img
+                  <Image
                     src={item.image_url.url}
+                    width={400}
+                    height={400}
                     alt="Вложенное изображение"
                     className="max-w-full h-auto rounded-lg border border-gray-200 shadow-sm"
-                    style={{ maxHeight: "400px" }}
                     loading="lazy"
                   />
                 </div>

@@ -3,7 +3,7 @@ import { MessageFactory } from "@/utils/messageFactory";
 import { useChatMessages } from "./useChatMessages";
 import { useChatSender } from "./useChatSender";
 import { STORAGE_KEYS } from "@/utils/constants";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useStorage } from "@/utils/storage/storageContext";
 
 export const useChat = () => {
@@ -11,7 +11,6 @@ export const useChat = () => {
   const [inputText, setInputText] = useState("");
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const searchParams = useSearchParams();
-  const router = useRouter();
   const {
     messages,
     isLoading: isLoadingMessages,
@@ -27,7 +26,9 @@ export const useChat = () => {
         storage.saveActiveChat(urlChatId);
         return;
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error(error);
+    }
     setActiveChatId(null);
   }, [searchParams, storage]);
 

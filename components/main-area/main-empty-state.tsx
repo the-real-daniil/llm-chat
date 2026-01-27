@@ -4,7 +4,6 @@ import PaperPlaneIcon from "../../assets/icons/paper-plane-icon";
 import Button from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useChat } from "@/hooks/useChat";
-import { useStorage } from "@/utils/storage/storageContext";
 
 const MainEmptyState = () => {
   const name = "Mauro Sicard";
