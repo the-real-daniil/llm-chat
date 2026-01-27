@@ -7,7 +7,7 @@ interface ChatMessage {
     text?: string;
     file?: { filename: string; file_data: string };
     image_url?: { url: string };
-    inpuy_audio?: {
+    input_audio?: {
       data: string;
       format: string;
     };
@@ -29,7 +29,7 @@ export class AIError extends Error {
   constructor(
     message: string,
     public code?: string,
-    public statusCode?: number
+    public statusCode?: number,
   ) {
     super(message);
     this.name = "AIError";
@@ -38,7 +38,7 @@ export class AIError extends Error {
 
 export async function sendToAI(
   content: string,
-  files?: FileAttachment[]
+  files?: FileAttachment[],
 ): Promise<string> {
   console.log("🚀 sendToAI вызвана!");
   console.log("📝 Текст:", content);
@@ -54,14 +54,14 @@ export async function sendToAI(
   if (!apiKey) {
     throw new AIError(
       "API ключ не настроен. Установите NEXT_PUBLIC_OPENROUTER_API_KEY в переменных окружения.",
-      "MISSING_API_KEY"
+      "MISSING_API_KEY",
     );
   }
 
   if (!model) {
     throw new AIError(
       "Модель не настроена. Установите NEXT_PUBLIC_OPENROUTER_MODEL в переменных окружения.",
-      "MISSING_MODEL"
+      "MISSING_MODEL",
     );
   }
 
@@ -108,7 +108,7 @@ export async function sendToAI(
       const fmt = validFormats.includes(format || "") ? format : "mp3";
       messageContent.push({
         type: "input_audio",
-        inpuy_audio: {
+        input_audio: {
           data: file.base64,
           format: fmt!,
         },
@@ -172,7 +172,7 @@ export async function sendToAI(
         errorData.error?.message ||
           `HTTP ${response.status}: ${response.statusText}`,
         "API_ERROR",
-        response.status
+        response.status,
       );
     }
 
@@ -202,7 +202,7 @@ export async function sendToAI(
       if (err.name === "AbortError") {
         throw new AIError(
           "Превышено время ожидания ответа (30 секунд)",
-          "TIMEOUT"
+          "TIMEOUT",
         );
       }
       throw new AIError(`Ошибка соединения: ${err.message}`, "NETWORK_ERROR");

@@ -11,7 +11,7 @@ export const useChatSender = () => {
       text: string,
       files: FileAttachment[],
       onSuccess: (message: Message) => void,
-      onError?: (error: AIError) => void
+      onError?: (error: AIError) => void,
     ): Promise<void> => {
       if (!text.trim() && files.length === 0) return;
 
@@ -27,11 +27,11 @@ export const useChatSender = () => {
             ? error
             : new AIError(
                 error instanceof Error ? error.message : "Неизвестная ошибка",
-                "UNKNOWN"
+                "UNKNOWN",
               );
 
         const errorMessage = MessageFactory.createAIMessage(
-          `Ошибка: ${aiError.message}`
+          `Ошибка: ${aiError.message}`,
         );
         onSuccess(errorMessage);
 
@@ -42,21 +42,11 @@ export const useChatSender = () => {
         setIsSending(false);
       }
     },
-    [isSending]
+    [],
   );
-  const sendTextOnly = useCallback(
-    async (
-      text: string,
-      onSuccess: (message: Message) => void,
-      onError?: (error: AIError) => void
-    ) => {
-      return sendMessage(text, [], onSuccess, onError);
-    },
-    [sendMessage]
-  );
+
   return {
     isSending,
     sendMessage,
-    sendTextOnly,
   };
 };

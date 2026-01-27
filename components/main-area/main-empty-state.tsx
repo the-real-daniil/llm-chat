@@ -12,24 +12,19 @@ const MainEmptyState = () => {
   const [isSending, setIsSending] = useState(false);
   const router = useRouter();
   const { handleSendWithFilesAndText, createNewChat } = useChat();
-  const storage = useStorage();
-
   const handleSend = async () => {
     const textToSend = areaTextValue.trim();
     if (!textToSend || isSending) return;
 
     setIsSending(true);
+    const newChatId = createNewChat();
+    console.log("First id(try)-", newChatId);
 
     try {
-      let chatId = storage.getActiveChat();
-      if (!chatId) {
-        chatId = createNewChat(); // создаёт чат и сохраняет в storage
-      }
       await handleSendWithFilesAndText(textToSend, []);
-
-      router.push(`/chat?chat=${chatId}`);
-    } catch (err) {
-      console.error("Ошибка отправки:", err);
+      router.push(`/chat?chat=${newChatId}`);
+    } catch {
+      router.push("/");
     } finally {
       setIsSending(false);
     }
@@ -65,7 +60,7 @@ const MainEmptyState = () => {
           <Button
             label=""
             disabled={!areaTextValue.trim() || isSending}
-            className="absolute right-0 bottom-10"
+            className="absolute right-0 bottom-4 bg-white hover:bg-white cursor-pointer disabled:cursor-not-allowed "
             onClickButton={handleSend}
             icon={<PaperPlaneIcon />}
           />

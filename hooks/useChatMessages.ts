@@ -7,20 +7,26 @@ export const useChatMessages = (chatId?: string | null) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(!!chatId);
   const prevChatIdRef = useRef<string | null | undefined>(null);
-
+  useEffect(() => {
+    console.log("✅ Компонент смонтирован");
+    return () => console.log("🗑️ Компонент размонтирован");
+  }, []);
   useEffect(() => {
     const loadMessages = async () => {
       if (!chatId) {
         setMessages([]);
         setIsLoading(false);
+        console.log("вызав при переходе на null");
         return;
       }
 
       setIsLoading(true);
       try {
-        const loadedMessages = storage.loadMessages(chatId);
-
+        console.log("выззвали загрузку");
+        const loadedMessages = storage.loadMessagesFromStorage(chatId);
         setMessages(loadedMessages);
+        console.log("загруженные сообщения", loadedMessages);
+        return;
       } catch (error) {
         setMessages([]);
       } finally {
@@ -33,51 +39,43 @@ export const useChatMessages = (chatId?: string | null) => {
       prevChatIdRef.current = chatId;
       loadMessages();
     }
-  }, [chatId]);
+  }, [chatId, storage]);
 
-  const addMessage = useCallback((id: string, message: Message) => {
-    setMessages((prevMessages) => {
-      const updatedMessages = [...prevMessages, message];
+  const addMessage = useCallback(
+    (id: string, message: Message) => {
+      setMessages((prevMessages) => {
+        const updatedMessages = [...prevMessages, message];
 
+        try {
+          storage.saveMessages(id, updatedMessages);
+        } catch (error) {
+          console.error("Ошибка сохранения:", error);
+        }
+
+        return updatedMessages;
+      });
+    },
+    [storage],
+  );
+
+  const clearMessages = useCallback(
+    (id: string) => {
+      setMessages([]);
       try {
-        storage.saveMessages(id, updatedMessages);
+        storage.saveMessages(id, []);
       } catch (error) {
-        console.error("Ошибка сохранения:", error);
+        console.error("Ошибка очистки:", error);
       }
-
-      return updatedMessages;
-    });
-  }, []);
-
-  const clearMessages = useCallback((id: string) => {
-    setMessages([]);
-    try {
-      storage.saveMessages(id, []);
-    } catch (error) {
-      console.error("Ошибка очистки:", error);
-    }
-  }, []);
-
-  const reloadMessages = useCallback(() => {
-    if (!chatId) return;
-
-    setIsLoading(true);
-    try {
-      const loadedMessages = storage.loadMessages(chatId);
-      setMessages(loadedMessages);
-    } catch (error) {
-      console.error("Ошибка перезагрузки сообщений:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [chatId]);
+    },
+    [storage],
+  );
 
   return {
     messages,
     isLoading,
     addMessage,
     clearMessages,
-    reloadMessages,
+
     messageCount: messages.length,
   };
 };

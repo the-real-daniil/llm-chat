@@ -1,5 +1,5 @@
 "use client";
-import { AttachIcon } from "@/assets/icons/attach";
+import { AttachIcon } from "@/assets/icons/attach-icon";
 import SendIcon from "@/assets/icons/send-icon";
 import Button from "@/components/ui/button";
 import { useRef, useState } from "react";
@@ -18,14 +18,12 @@ export const MessageInput = ({
 
   handleSendWithFilesAndText,
 }: MessageInputProps) => {
-  const [showFileInput, setShowFileInput] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     setSelectedFiles(files);
-    setShowFileInput(false);
   };
   const removeFile = (index: number) => {
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
@@ -69,8 +67,8 @@ export const MessageInput = ({
                     {file.type.includes("pdf")
                       ? "📄"
                       : file.type.includes("image")
-                      ? "🖼️"
-                      : "📎"}
+                        ? "🖼️"
+                        : "📎"}
                     <span className="font-medium truncate max-w-[150px]">
                       {file.name}
                     </span>

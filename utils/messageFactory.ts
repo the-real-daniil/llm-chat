@@ -6,37 +6,40 @@ export class MessageFactory {
     if (text.trim()) {
       content.push({ type: "text", text: text.trim() });
     }
-    const docs =
-      files?.filter(
-        (f) =>
-          f.type === "application/pdf" ||
-          f.type === "text/plain" ||
-          f.type === "application/msword" ||
-          f.type ===
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-      ) || [];
-    docs.forEach((file) => {
-      content.push({ type: "file", file });
-    });
-    const images = files?.filter((f) => f.type.startsWith("image/")) || [];
-    images.forEach((file) => {
-      content.push({
-        type: "image_url",
-        image_url: {
-          url: `data.${file.type};base64,${file.base64}`,
-        },
+    if (files && files.length > 0) {
+      files.forEach((file) => {
+        if (file.type.startsWith("image/")) {
+          content.push({
+            type: "image_url",
+            image_url: {
+              url: `data:${file.type};base64,${file.base64}`,
+            },
+          });
+        } else if (file.type.startsWith("audio/")) {
+          // Для аудио используем input_audio
+          const format = file.name.split(".").pop()?.toLowerCase() || "wav";
+          content.push({
+            type: "input_audio",
+            input_audio: {
+              data: file.base64,
+              format: format,
+            },
+          });
+        } else {
+          // Для остальных файлов (PDF, тексты и т.д.) используем file
+          content.push({
+            type: "file",
+            file: {
+              name: file.name,
+              type: file.type,
+              size: file.size,
+              file: file.file,
+              base64: file.base64,
+            },
+          });
+        }
       });
-    });
-    const audio = files?.filter((f) => f.type.startsWith("audio/"));
-    audio?.forEach((file) => {
-      content.push({
-        type: "input_audio",
-        input_audio: {
-          data: file.base64,
-          format: file.name.split(".").pop() || "mp3",
-        },
-      });
-    });
+    }
     return {
       id: Date.now(),
       content,
@@ -86,7 +89,7 @@ export class MessageFactory {
         const format = this.getFileFormat(file.type);
 
         console.log(
-          `📁 Создание FileAttachment: ${file.name}, тип: ${file.type}, формат: ${format}`
+          `📁 Создание FileAttachment: ${file.name}, тип: ${file.type}, формат: ${format}`,
         );
 
         resolve({
@@ -103,27 +106,12 @@ export class MessageFactory {
   }
 
   private static getFileFormat(
-    mimeType: string
-  ): "pdf" | "image" | "text" | "unknown" {
+    mimeType: string,
+  ): "pdf" | "image_url" | "text" | "unknown" {
     if (mimeType.includes("pdf")) return "pdf";
-    if (mimeType.includes("image")) return "image";
+    if (mimeType.includes("image")) return "image_url";
     if (mimeType.includes("text")) return "text";
     return "unknown";
-  }
-
-  static createFileOnlyMessage(files: FileAttachment[]): Message {
-    const content = files.map((file) => ({
-      type: "file" as const,
-      file,
-    }));
-
-    return {
-      id: Date.now(),
-      content,
-      sender: "user",
-      timestamp: this.formatTimestamp(),
-      avatar: "/profile-photo.jpg",
-    };
   }
 
   private static formatTimestamp(format: "full" | "time" = "full"): string {

@@ -3,7 +3,7 @@ import { MessageFactory } from "@/utils/messageFactory";
 import { useChatMessages } from "./useChatMessages";
 import { useChatSender } from "./useChatSender";
 import { STORAGE_KEYS } from "@/utils/constants";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useStorage } from "@/utils/storage/storageContext";
 
 export const useChat = () => {
@@ -11,7 +11,7 @@ export const useChat = () => {
   const [inputText, setInputText] = useState("");
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const searchParams = useSearchParams();
-
+  const router = useRouter();
   const {
     messages,
     isLoading: isLoadingMessages,
@@ -29,7 +29,7 @@ export const useChat = () => {
       }
     } catch (error) {}
     setActiveChatId(null);
-  }, [searchParams]);
+  }, [searchParams, storage]);
 
   const createNewChat = useCallback(() => {
     const newChatId = `chat_${Date.now()}`;
@@ -49,49 +49,49 @@ export const useChat = () => {
     }, 100);
 
     return newChatId;
-  }, []);
+  }, [storage]);
   const handleSendWithFilesAndText = useCallback(
     async (text: string, files: File[]) => {
       if (!text.trim() && files.length === 0) return;
-
+      const chatId = storage.getActiveChat();
+      console.log("записываем все в ", chatId);
       try {
         const attachments = files.length
           ? await Promise.all(
-              files.map((file) => MessageFactory.createFileAttachment(file))
+              files.map((file) => MessageFactory.createFileAttachment(file)),
             )
           : undefined;
 
-        let chatId = activeChatId;
-        if (!chatId) {
-          chatId = createNewChat();
-        }
-
         const userMessage = MessageFactory.createUserMessage(
           text.trim(),
-          attachments
+          attachments,
         );
         addMessage(chatId, userMessage);
         setInputText("");
-
+        console.log("добавили сообщение юзера", chatId);
         await sendMessage(text.trim(), attachments || [], (aiMessage) => {
           addMessage(chatId, aiMessage);
+          console.log("добавили сообщение эай", chatId);
         });
       } catch (error) {
         console.error("Ошибка отправки:", error);
       }
     },
-    [activeChatId, addMessage, sendMessage, createNewChat]
+    [addMessage, sendMessage, storage],
   );
 
-  const loadChat = useCallback((chatId: string) => {
-    setActiveChatId(chatId);
-    storage.saveActiveChat(chatId);
-  }, []);
+  const loadChat = useCallback(
+    (chatId: string) => {
+      setActiveChatId(chatId);
+      storage.saveActiveChat(chatId);
+    },
+    [storage],
+  );
 
   const clearActiveChat = useCallback(() => {
     setActiveChatId(null);
     storage.clearActiveChat();
-  }, []);
+  }, [storage]);
 
   return {
     messages,

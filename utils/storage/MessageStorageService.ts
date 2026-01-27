@@ -8,7 +8,7 @@ export interface ChatInfo {
   lastMessage?: string;
   messageCount: number;
 }
-interface IStorge {
+interface Storge {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
   removeItem(key: string): void;
@@ -17,7 +17,7 @@ interface IStorge {
   key(index: number): string | null;
 }
 
-const localStorageProvider: IStorge = {
+const localStorageProvider: Storge = {
   getItem(key: string): string | null {
     return localStorage.getItem(key);
   },
@@ -42,8 +42,8 @@ const getMessageText = (message: Message): string => {
   return textContent?.text || "";
 };
 export class MessageStorageService {
-  private storage: IStorge;
-  constructor(storage: IStorge = localStorageProvider) {
+  private storage: Storge;
+  constructor(storage: Storge = localStorageProvider) {
     this.storage = storage;
   }
 
@@ -68,7 +68,7 @@ export class MessageStorageService {
         const filteredChats = chats.filter((chat) => chat.id !== chatId);
         this.storage.setItem(
           STORAGE_KEYS.CHATS_LIST,
-          JSON.stringify(filteredChats)
+          JSON.stringify(filteredChats),
         );
         return;
       }
@@ -127,14 +127,14 @@ export class MessageStorageService {
       const chats: ChatInfo[] = data ? JSON.parse(data) : [];
 
       const validChats = chats.filter((chat) => {
-        const messages = this.loadMessages(chat.id);
+        const messages = this.loadMessagesFromStorage(chat.id);
         return messages.length > 0;
       });
 
       if (validChats.length !== chats.length) {
         this.storage.setItem(
           STORAGE_KEYS.CHATS_LIST,
-          JSON.stringify(validChats)
+          JSON.stringify(validChats),
         );
       }
 
@@ -154,14 +154,14 @@ export class MessageStorageService {
       const filteredChats = chats.filter((chat) => chat.id !== chatId);
       this.storage.setItem(
         STORAGE_KEYS.CHATS_LIST,
-        JSON.stringify(filteredChats)
+        JSON.stringify(filteredChats),
       );
     } catch (error) {
       console.error("Ошибка удаления чата:", error);
     }
   }
 
-  loadMessages(chatId: string): Message[] {
+  loadMessagesFromStorage(chatId: string): Message[] {
     try {
       const key = `${STORAGE_KEYS.CHAT_PREFIX}${chatId}`;
       const data = this.storage.getItem(key);

@@ -1,12 +1,6 @@
 const PaperPlaneIcon = () => {
   return (
-    <svg
-      width="52"
-      height="52"
-      viewBox="0 0 52 52"
-      fill="none"
-      className="absolute right-0"
-    >
+    <svg width="52" height="52" viewBox="0 0 52 52" fill="none" className="">
       <g filter="url(#filter0_dii_14226_283)">
         <path
           d="M5 11C5 6.58172 8.58172 3 13 3H39C43.4183 3 47 6.58172 47 11V37C47 41.4183 43.4183 45 39 45H13C8.58172 45 5 41.4183 5 37V11Z"
