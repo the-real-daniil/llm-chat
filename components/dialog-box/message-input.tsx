@@ -1,14 +1,15 @@
-"use client";
-import { AttachIcon } from "@/assets/icons/attach-icon";
-import SendIcon from "@/assets/icons/send-icon";
-import Button from "@/components/ui/button";
-import { useRef, useState } from "react";
+'use client';
+import { AttachIcon } from '@/assets/icons/attach-icon';
+import SendIcon from '@/assets/icons/send-icon';
+import Button from '@/components/ui/button';
+import { useParams } from 'next/navigation';
+import { useRef, useState } from 'react';
 
 interface MessageInputProps {
   inputText: string;
   isLoading: boolean;
   onInputChange: (text: string) => void;
-  handleSendWithFilesAndText: (text: string, files: File[]) => Promise<void>;
+  handleSendWithFilesAndText: (chatId: string, text: string, files: File[]) => Promise<void>;
 }
 
 export const MessageInput = ({
@@ -18,6 +19,9 @@ export const MessageInput = ({
 
   handleSendWithFilesAndText,
 }: MessageInputProps) => {
+  const params = useParams();
+  const chatId = params.id as string;
+
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -30,12 +34,12 @@ export const MessageInput = ({
   };
 
   const handleSendMessage = async () => {
-    await handleSendWithFilesAndText(inputText, selectedFiles);
+    await handleSendWithFilesAndText(chatId, inputText, selectedFiles);
     setSelectedFiles([]);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
@@ -53,7 +57,7 @@ export const MessageInput = ({
               className="w-full h-24 py-2 resize-none focus:outline-none text-sm overflow-hidden"
               rows={1}
               disabled={isLoading}
-              style={{ minHeight: "40px", maxHeight: "100px" }}
+              style={{ minHeight: '40px', maxHeight: '100px' }}
             />
 
             {/* Отображение выбранных файлов */}
@@ -62,21 +66,13 @@ export const MessageInput = ({
                 {selectedFiles.map((file, index) => (
                   <div
                     key={index}
-                    className="text-xs bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg flex items-center gap-2"
-                  >
-                    {file.type.includes("pdf")
-                      ? "📄"
-                      : file.type.includes("image")
-                        ? "🖼️"
-                        : "📎"}
-                    <span className="font-medium truncate max-w-[150px]">
-                      {file.name}
-                    </span>
+                    className="text-xs bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg flex items-center gap-2">
+                    {file.type.includes('pdf') ? '📄' : file.type.includes('image') ? '🖼️' : '📎'}
+                    <span className="font-medium truncate max-w-[150px]">{file.name}</span>
                     <button
                       onClick={() => removeFile(index)}
                       className="text-gray-500 hover:text-red-500 text-sm ml-1"
-                      title="Удалить файл"
-                    >
+                      title="Удалить файл">
                       ×
                     </button>
                   </div>
@@ -112,9 +108,7 @@ export const MessageInput = ({
             <Button
               label="Send"
               onClickButton={handleSendMessage}
-              disabled={
-                isLoading || (!inputText.trim() && selectedFiles.length === 0)
-              }
+              disabled={isLoading || (!inputText.trim() && selectedFiles.length === 0)}
               className="px-4 py-2.5 m-1 bg-blue-500 text-white rounded-xl hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2 text-sm font-medium"
               icon={<SendIcon />}
             />

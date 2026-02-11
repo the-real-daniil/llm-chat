@@ -1,36 +1,36 @@
-"use client";
-import { useState } from "react";
-import PaperPlaneIcon from "../../assets/icons/paper-plane-icon";
-import Button from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import { useChat } from "@/hooks/useChat";
+'use client';
+import { useState } from 'react';
+import PaperPlaneIcon from '../../assets/icons/paper-plane-icon';
+import Button from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
+import { useChat } from '@/hooks/useChat';
 
 const MainEmptyState = () => {
-  const name = "Mauro Sicard";
-  const [areaTextValue, setAreaTextValue] = useState("");
+  const name = 'Mauro Sicard';
+  const [areaTextValue, setAreaTextValue] = useState('');
   const [isSending, setIsSending] = useState(false);
   const router = useRouter();
   const { handleSendWithFilesAndText, createNewChat } = useChat();
-  const handleSend = async () => {
+  const handleSend = () => {
     const textToSend = areaTextValue.trim();
     if (!textToSend || isSending) return;
 
     setIsSending(true);
     const newChatId = createNewChat();
-    console.log("First id(try)-", newChatId);
 
     try {
-      await handleSendWithFilesAndText(textToSend, []);
-      router.push(`/chat?chat=${newChatId}`);
-    } catch {
-      router.push("/");
+      router.push(`/chats/${newChatId}`);
+      handleSendWithFilesAndText(newChatId, textToSend, []);
+      // window.location.reload();
+    } catch (error) {
+      router.push('/');
     } finally {
       setIsSending(false);
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
@@ -41,11 +41,8 @@ const MainEmptyState = () => {
       <div
         className={`flex flex-col items-center justify-center rounded-3xl
          w-[775px] h-[235px] p-11 border border-gray-400
-          bg-gradient-to-b from-white-200 via-purple-200 to-blue-200 shadow-lg`}
-      >
-        <h1 className="text-2xl text-gray-600 font-bold">
-          Welcome back, {name}
-        </h1>
+          bg-gradient-to-b from-white-200 via-purple-200 to-blue-200 shadow-lg`}>
+        <h1 className="text-2xl text-gray-600 font-bold">Welcome back, {name}</h1>
         <h4 className="text-gray-600 mt-2">Напиши мне, пожалуйста</h4>
         <div className="relative flex-1 w-full">
           <textarea

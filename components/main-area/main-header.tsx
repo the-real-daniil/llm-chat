@@ -1,16 +1,13 @@
-"use client";
-import PlusIcon from "@/assets/icons/plus-icon";
-import Button from "../ui/button";
-import Link from "next/link";
-import { useChat } from "@/hooks/useChat";
-import { useRouter } from "next/navigation";
+'use client';
+import PlusIcon from '@/assets/icons/plus-icon';
+import Button from '../ui/button';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const MainHeader = () => {
-  const { clearActiveChat } = useChat();
   const router = useRouter();
   const handleNewChat = () => {
-    clearActiveChat();
-    router.push("/");
+    router.push('/');
   };
 
   return (

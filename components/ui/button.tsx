@@ -1,13 +1,14 @@
-"use client";
-import { ReactNode } from "react";
+'use client';
+import { ReactNode } from 'react';
 
 interface ButtonProps {
   label: string;
-  onClickButton: () => void;
+  onClickButton?: () => void;
   isLoading?: boolean;
   disabled?: boolean;
   icon?: ReactNode;
   className?: string;
+  type?: 'button' | 'submit' | 'reset';
 }
 const Button: React.FC<ButtonProps> = ({
   label,
@@ -15,20 +16,21 @@ const Button: React.FC<ButtonProps> = ({
   isLoading = false,
   disabled = false,
   icon,
-  className = "",
+  className = '',
+  type = 'button',
 }) => {
   const handleClick = () => {
     if (isLoading || disabled) return;
-    onClickButton();
+    onClickButton?.();
   };
   return (
     <button
+      type={type}
       onClick={handleClick}
       disabled={disabled || isLoading}
       className={`flex items-center gap-2 bg-blue-500 rounded-xl 
          text-white hover:bg-blue-700 transition-colors 
-        justify-center border border-solid ${className} `}
-    >
+        justify-center border border-solid ${className} `}>
       {icon}
       {label}
     </button>

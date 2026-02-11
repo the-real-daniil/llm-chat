@@ -1,4 +1,5 @@
-import SideBar from "@/components/side-bar";
+'use client';
+import SideBar from '@/components/side-bar';
 
 const Page = ({
   children,

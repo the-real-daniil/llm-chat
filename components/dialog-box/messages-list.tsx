@@ -1,14 +1,11 @@
-"use client";
-
-import { Message } from "@/types/chat";
-import MessageItem from "./message-item";
-import { memo } from "react";
+import { Message } from '@/types/chat';
+import MessageItem from './message-item';
 
 interface MessagesListProps {
   messages: Message[];
 }
 
-export const MessagesList = memo(({ messages }: MessagesListProps) => {
+export const MessagesList = ({ messages }: MessagesListProps) => {
   return (
     <>
       <div className="flex items-center my-3">
@@ -26,6 +23,4 @@ export const MessagesList = memo(({ messages }: MessagesListProps) => {
       </div>
     </>
   );
-});
-
-MessagesList.displayName = "MessagesList";
+};
