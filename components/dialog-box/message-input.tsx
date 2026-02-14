@@ -2,26 +2,22 @@
 import { AttachIcon } from '@/assets/icons/attach-icon';
 import SendIcon from '@/assets/icons/send-icon';
 import Button from '@/components/ui/button';
-import { useParams } from 'next/navigation';
 import { useRef, useState } from 'react';
 
 interface MessageInputProps {
   inputText: string;
-  isLoading: boolean;
+  isSending: boolean;
   onInputChange: (text: string) => void;
-  handleSendWithFilesAndText: (chatId: string, text: string, files: File[]) => Promise<void>;
+  handleSendWithFilesAndText: (text: string, files: File[]) => Promise<void>;
 }
 
 export const MessageInput = ({
   inputText,
-  isLoading,
+  isSending,
   onInputChange,
 
   handleSendWithFilesAndText,
 }: MessageInputProps) => {
-  const params = useParams();
-  const chatId = params.id as string;
-
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -34,7 +30,7 @@ export const MessageInput = ({
   };
 
   const handleSendMessage = async () => {
-    await handleSendWithFilesAndText(chatId, inputText, selectedFiles);
+    await handleSendWithFilesAndText(inputText, selectedFiles);
     setSelectedFiles([]);
   };
 
@@ -56,11 +52,10 @@ export const MessageInput = ({
               placeholder="How can I help you?"
               className="w-full h-24 py-2 resize-none focus:outline-none text-sm overflow-hidden"
               rows={1}
-              disabled={isLoading}
+              disabled={isSending}
               style={{ minHeight: '40px', maxHeight: '100px' }}
             />
 
-            {/* Отображение выбранных файлов */}
             {selectedFiles.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-2">
                 {selectedFiles.map((file, index) => (
@@ -94,7 +89,7 @@ export const MessageInput = ({
                 />
                 <AttachIcon />
               </div>
-              {/* Скрытый input для хранения файлов */}
+
               <input
                 type="file"
                 ref={fileInputRef}
@@ -108,7 +103,7 @@ export const MessageInput = ({
             <Button
               label="Send"
               onClickButton={handleSendMessage}
-              disabled={isLoading || (!inputText.trim() && selectedFiles.length === 0)}
+              disabled={isSending || (!inputText.trim() && selectedFiles.length === 0)}
               className="px-4 py-2.5 m-1 bg-blue-500 text-white rounded-xl hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2 text-sm font-medium"
               icon={<SendIcon />}
             />

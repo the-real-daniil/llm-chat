@@ -6,9 +6,10 @@ import Image from 'next/image';
 
 interface MessageItemProps {
   message: Message;
+  handleResend: (message: Message) => void;
 }
 
-const MessageItem = ({ message }: MessageItemProps) => {
+const MessageItem = ({ message, handleResend }: MessageItemProps) => {
   const handleCopy = async (message: Message) => {
     const text = message.content.map((item) => item.text).join('');
     try {
@@ -19,39 +20,9 @@ const MessageItem = ({ message }: MessageItemProps) => {
       alert('Не удалось скопировать');
     }
   };
-  const handleResend = () => {
-    const allMessages = Array.from(document.querySelectorAll('[data-message-id]')).map((el) => ({
-      id: el.getAttribute('data-message-id'),
-      sender: el.getAttribute('data-sender'),
-    }));
-
-    const currentIndex = allMessages.findIndex((m) => m.id === String(message.id));
-
-    if (currentIndex === -1) {
-      console.log('❌ [handleResend] Текущее сообщение не найдено в DOM');
-      return;
-    }
-
-    const userMessageBefore = [...allMessages]
-      .slice(0, currentIndex)
-      .reverse()
-      .find((m) => m.sender === 'user');
-
-    if (!userMessageBefore) {
-      console.log('❌ [handleResend] Нет user-сообщения перед этим AI');
-      return;
-    }
-
-    window.dispatchEvent(
-      new CustomEvent('resend-user-message', {
-        detail: { messageId: userMessageBefore.id },
-      }),
-    );
-  };
 
   return (
     <div
-      data-message-id={message.id}
       data-sender={message.sender === 'user' ? 'user' : 'ai'}
       className={`flex items-start gap-3 px-4 py-2 max-w-full ${
         message.sender === 'ai' ? 'border border-gray-200 rounded-lg' : ''
@@ -86,7 +57,7 @@ const MessageItem = ({ message }: MessageItemProps) => {
                 <Button
                   label=""
                   icon={<ReplayIcon />}
-                  onClickButton={() => handleResend()}
+                  onClickButton={() => handleResend(message)}
                   className="p-1.5 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded text-blue-700 hover:text-gray-900 min-w-0 w-8 h-8 flex items-center justify-center"
                 />
               </div>

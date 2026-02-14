@@ -1,34 +1,32 @@
-import { FileAttachment, Message, MessageContent } from "@/types/chat";
+import { FileAttachment, Message, MessageContent } from '@/types/chat';
 
 export class MessageFactory {
   static createUserMessage(text: string, files?: FileAttachment[]): Message {
     const content: MessageContent[] = [];
     if (text.trim()) {
-      content.push({ type: "text", text: text.trim() });
+      content.push({ type: 'text', text: text.trim() });
     }
     if (files && files.length > 0) {
       files.forEach((file) => {
-        if (file.type.startsWith("image/")) {
+        if (file.type.startsWith('image/')) {
           content.push({
-            type: "image_url",
+            type: 'image_url',
             image_url: {
               url: `data:${file.type};base64,${file.base64}`,
             },
           });
-        } else if (file.type.startsWith("audio/")) {
-          // Для аудио используем input_audio
-          const format = file.name.split(".").pop()?.toLowerCase() || "wav";
+        } else if (file.type.startsWith('audio/')) {
+          const format = file.name.split('.').pop()?.toLowerCase() || 'wav';
           content.push({
-            type: "input_audio",
+            type: 'input_audio',
             input_audio: {
               data: file.base64,
               format: format,
             },
           });
         } else {
-          // Для остальных файлов (PDF, тексты и т.д.) используем file
           content.push({
-            type: "file",
+            type: 'file',
             file: {
               name: file.name,
               type: file.type,
@@ -43,19 +41,19 @@ export class MessageFactory {
     return {
       id: Date.now(),
       content,
-      sender: "user",
+      sender: 'user',
       timestamp: this.formatTimestamp(),
-      avatar: "/profile-photo.jpg",
+      avatar: '/profile-photo.jpg',
     };
   }
 
   static createAIMessage(text: string): Message {
     return {
       id: Date.now() + 1,
-      content: [{ type: "text", text }],
-      sender: "ai",
+      content: [{ type: 'text', text }],
+      sender: 'ai',
       timestamp: this.formatTimestamp(),
-      avatar: "/ai-photo.jpg",
+      avatar: '/ai-photo.jpg',
     };
   }
 
@@ -64,20 +62,20 @@ export class MessageFactory {
       id: Date.now() + 1,
       content: [
         {
-          type: "text",
-          text: "Извините, произошла ошибка соединения. Пожалуйста, попробуйте еще раз.",
+          type: 'text',
+          text: 'Извините, произошла ошибка соединения. Пожалуйста, попробуйте еще раз.',
         },
       ],
-      sender: "ai",
-      timestamp: this.formatTimestamp("time"),
-      avatar: "🤖",
+      sender: 'ai',
+      timestamp: this.formatTimestamp('time'),
+      avatar: '🤖',
     };
   }
 
   static generateInitialTitle(firstMessage: string): string {
     const cleanText = firstMessage.trim();
     if (cleanText.length <= 30) return cleanText;
-    return cleanText.substring(0, 30) + "...";
+    return cleanText.substring(0, 30) + '...';
   }
 
   static async createFileAttachment(file: File): Promise<FileAttachment> {
@@ -85,13 +83,8 @@ export class MessageFactory {
       const reader = new FileReader();
       reader.onload = () => {
         const daraUrl = reader.result as string;
-        const base64String = daraUrl.split(",")[1];
+        const base64String = daraUrl.split(',')[1];
         const format = this.getFileFormat(file.type);
-
-        console.log(
-          `📁 Создание FileAttachment: ${file.name}, тип: ${file.type}, формат: ${format}`,
-        );
-
         resolve({
           name: file.name,
           type: file.type,
@@ -100,35 +93,33 @@ export class MessageFactory {
           base64: base64String,
         });
       };
-      reader.onerror = () => reject(new Error("Ошибка чтения файла"));
+      reader.onerror = () => reject(new Error('Ошибка чтения файла'));
       reader.readAsDataURL(file);
     });
   }
 
-  private static getFileFormat(
-    mimeType: string,
-  ): "pdf" | "image_url" | "text" | "unknown" {
-    if (mimeType.includes("pdf")) return "pdf";
-    if (mimeType.includes("image")) return "image_url";
-    if (mimeType.includes("text")) return "text";
-    return "unknown";
+  private static getFileFormat(mimeType: string): 'pdf' | 'image_url' | 'text' | 'unknown' {
+    if (mimeType.includes('pdf')) return 'pdf';
+    if (mimeType.includes('image')) return 'image_url';
+    if (mimeType.includes('text')) return 'text';
+    return 'unknown';
   }
 
-  private static formatTimestamp(format: "full" | "time" = "full"): string {
+  private static formatTimestamp(format: 'full' | 'time' = 'full'): string {
     const date = new Date();
 
-    if (format === "time") {
+    if (format === 'time') {
       return date.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
+        hour: '2-digit',
+        minute: '2-digit',
       });
     }
 
-    return date.toLocaleString("en-US", {
-      day: "numeric",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
+    return date.toLocaleString('en-US', {
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
       hour12: true,
     });
   }

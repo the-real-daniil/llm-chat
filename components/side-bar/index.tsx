@@ -3,7 +3,6 @@ import Button from '../ui/button';
 import ProfileBar from './profile-bar';
 import PlusIcon from '@/assets/icons/plus-icon';
 import { useParams, useRouter } from 'next/navigation';
-
 import { useState, useEffect } from 'react';
 import { ChatInfo } from '@/utils/storage/MessageStorageService';
 import { useStorage } from '@/utils/storage/storageContext';

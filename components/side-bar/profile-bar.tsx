@@ -1,5 +1,5 @@
 import ClearIcon from '../../assets/icons/clear-icon';
-import SetingIcon from '../../assets/icons/setings-icon';
+import SettingsIcon from '../../assets/icons/settings-icon';
 
 const ProfileBar = () => {
   const name = 'Mauro Sicard';
@@ -11,7 +11,7 @@ const ProfileBar = () => {
         <span className="text-gray-600">{name}</span>
       </div>
       <div className="flex items-center gap-1">
-        <SetingIcon />
+        <SettingsIcon />
         <ClearIcon />
       </div>
     </div>

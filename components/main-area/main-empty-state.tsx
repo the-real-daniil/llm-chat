@@ -3,30 +3,40 @@ import { useState } from 'react';
 import PaperPlaneIcon from '../../assets/icons/paper-plane-icon';
 import Button from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { useChat } from '@/hooks/useChat';
+import { useHooksForChat } from '@/hooks/useHooksForChat';
+import { Message } from '@/types/chat';
 
 const MainEmptyState = () => {
   const name = 'Mauro Sicard';
   const [areaTextValue, setAreaTextValue] = useState('');
   const [isSending, setIsSending] = useState(false);
   const router = useRouter();
-  const { handleSendWithFilesAndText, createNewChat } = useChat();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const { createNewChat } = useHooksForChat({
+    setMessages,
+    setIsSending,
+    setInputText: setAreaTextValue,
+  });
   const handleSend = () => {
     const textToSend = areaTextValue.trim();
     if (!textToSend || isSending) return;
-
     setIsSending(true);
+
     const newChatId = createNewChat();
 
-    try {
-      router.push(`/chats/${newChatId}`);
-      handleSendWithFilesAndText(newChatId, textToSend, []);
-      // window.location.reload();
-    } catch (error) {
-      router.push('/');
-    } finally {
-      setIsSending(false);
-    }
+    router.push(`/chats/${newChatId}`);
+
+    setTimeout(() => {
+      const event = new CustomEvent('firstMessageSended', {
+        detail: {
+          chatId: newChatId,
+          message: textToSend,
+        },
+        bubbles: true,
+      });
+
+      window.dispatchEvent(event);
+    }, 300);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

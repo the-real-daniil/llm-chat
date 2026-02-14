@@ -1,94 +1,66 @@
 'use client';
-
-import { useEffect, useRef } from 'react';
-import { useChat } from '@/hooks/useChat';
+import { useEffect, useRef, useState } from 'react';
 import { MessagesList } from './messages-list';
 import { MessageInput } from './message-input';
 import MainHeader from '../main-area/main-header';
 import { useParams } from 'next/navigation';
+import { useStorage } from '@/utils/storage/storageContext';
+import { Message } from '@/types/chat';
+import { useHooksForChat } from '@/hooks/useHooksForChat';
+import { useFileUtils } from '@/hooks/useFileUtils';
 
 const DialogBox = () => {
-  const { messages, isLoading, inputText, setInputText, handleSendWithFilesAndText } = useChat();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
+  const storage = useStorage();
   const params = useParams();
   const chatId = params.id as string;
+  const [messages, setMessages] = useState<Message[]>(() =>
+    storage.loadMessagesFromStorage(chatId),
+  );
+  const [inputText, setInputText] = useState('');
+  const [isSending, setIsSending] = useState(false);
 
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
+    storage.saveMessages(chatId, messages);
   }, [messages]);
 
+  const { handleSendMessage } = useHooksForChat({
+    setMessages,
+    setIsSending,
+    setInputText,
+  });
+  const { extractFilesFromMessage, getMessageText, findPreviousUserMessage, dataUrlToFile } =
+    useFileUtils();
   useEffect(() => {
-    const handleResend = (e: CustomEvent) => {
-      const { messageId } = e.detail;
-      if (!messageId) return;
-
-      const userMessage = messages.find((m) => String(m.id) === String(messageId));
-      if (!userMessage) {
+    const handleFirstMessage = (event: CustomEvent) => {
+      if (event.detail.chatId !== chatId) {
         return;
       }
 
-      const text = userMessage.content.map((item) => item.text).join('');
+      handleSendMessage(event.detail.message, []);
 
-      const files: File[] = [];
-
-      const dataUrlToFile = (dataUrl: string, filename: string): File => {
-        const arr = dataUrl.split(',');
-        const mimeMatch = arr[0].match(/:(.*?);/);
-        const mimeType = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
-
-        const base64String = arr[1];
-        const byteString = atob(base64String);
-
-        const ab = new ArrayBuffer(byteString.length);
-        const ia = new Uint8Array(ab);
-        for (let i = 0; i < byteString.length; i++) {
-          ia[i] = byteString.charCodeAt(i);
-        }
-
-        const blob = new Blob([ab], { type: mimeType });
-        return new File([blob], filename, { type: mimeType });
-      };
-
-      userMessage.content.forEach((item) => {
-        if (item.file?.file) {
-          files.push(item.file.file);
-        } else if (item.file?.name && item.file?.base64) {
-          try {
-            const dataUrl = `data:${item.file.type};base64,${item.file.base64}`;
-            const file = dataUrlToFile(dataUrl, item.file.name);
-            files.push(file);
-          } catch (err) {
-            console.error('не удаллось воссоздать файл из base64', item.file.name, err);
-          }
-        }
-
-        if (item.image_url?.url) {
-          try {
-            const url = item.image_url.url;
-            const mimeMatch = url.match(/:(.*?);/);
-            const ext = mimeMatch ? mimeMatch[1].split('/').pop()?.split(';')[0] : 'png';
-            const filename = `image.${ext}`;
-
-            const file = dataUrlToFile(url, filename);
-            files.push(file);
-          } catch (err) {
-            console.error('❌ Не удалось создать файл из image_url:', err);
-          }
-        }
-      });
-
-      handleSendWithFilesAndText(chatId, text, files);
+      setTimeout(() => {
+        window.dispatchEvent(new Event('storage'));
+      }, 100);
     };
-
-    window.addEventListener('resend-user-message', handleResend as EventListener);
-
+    window.addEventListener('firstMessageSended', handleFirstMessage as EventListener);
     return () => {
-      window.removeEventListener('resend-user-message', handleResend as EventListener);
+      window.removeEventListener('firstMessageSended', handleFirstMessage as EventListener);
     };
-  }, [messages, handleSendWithFilesAndText]);
+  }, []);
+
+  const handleResend = async (message: Message) => {
+    const userMessage = findPreviousUserMessage(messages, message.id);
+    if (!userMessage) {
+      return;
+    }
+    const text = getMessageText(userMessage);
+    const files = extractFilesFromMessage(userMessage);
+    handleSendMessage(text, files);
+  };
 
   return (
     <div className="flex-1 flex flex-col h-full">
@@ -97,16 +69,16 @@ const DialogBox = () => {
       </div>
 
       <div className="flex-1 overflow-y-auto px-8 md:px-32 lg:px-40 py-4">
-        <MessagesList messages={messages} />
+        <MessagesList messages={messages} handleResend={handleResend} />
         <div ref={messagesEndRef} />
       </div>
 
       <div className="flex-shrink-0  bg-white z-10">
         <MessageInput
           inputText={inputText}
-          isLoading={isLoading}
+          isSending={isSending}
           onInputChange={setInputText}
-          handleSendWithFilesAndText={handleSendWithFilesAndText}
+          handleSendWithFilesAndText={handleSendMessage}
         />
       </div>
     </div>
