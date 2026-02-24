@@ -1,18 +1,17 @@
-"use client";
-import Button from "../ui/button";
-import ProfileBar from "./profile-bar";
-import PlusIcon from "@/assets/icons/plus-icon";
-import { useRouter } from "next/navigation";
-import { useChat } from "@/hooks/useChat";
-import { useState, useEffect } from "react";
-import { ChatInfo } from "@/utils/storage/MessageStorageService";
-import { useStorage } from "@/utils/storage/storageContext";
+'use client';
+import Button from '../ui/button';
+import ProfileBar from './profile-bar';
+import PlusIcon from '@/assets/icons/plus-icon';
+import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { ChatInfo } from '@/utils/storage/MessageStorageService';
+import { useStorage } from '@/utils/storage/storageContext';
 
 const SideBar = () => {
   const storage = useStorage();
   const router = useRouter();
-
-  const { loadChat, activeChatId, clearActiveChat } = useChat();
+  const params = useParams();
+  const nowChatIt = params.id as string;
   const [chats, setChats] = useState<ChatInfo[]>([]);
 
   useEffect(() => {
@@ -20,25 +19,22 @@ const SideBar = () => {
       const loadedChats = storage.getChatsList();
       setChats(loadedChats);
     };
-
     loadChats();
 
     const handleStorageChange = () => {
       loadChats();
     };
 
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [storage]);
 
   const handleNewChat = () => {
-    router.push("/");
+    router.push('/');
   };
 
   const handleOpenChat = (chatId: string) => {
-    loadChat(chatId);
-
-    router.push(`/chat?chat=${chatId}`);
+    router.push(`/chats/${chatId}`);
   };
 
   const handleDeleteChat = (chatId: string, e: React.MouseEvent) => {
@@ -48,9 +44,8 @@ const SideBar = () => {
     const updatedChats = storage.getChatsList();
     setChats(updatedChats);
 
-    if (activeChatId === chatId) {
-      clearActiveChat();
-      router.push("/");
+    if (nowChatIt === chatId) {
+      router.push('/');
     }
   };
 
@@ -68,26 +63,18 @@ const SideBar = () => {
               {chats.map((chat) => (
                 <div
                   key={chat.id}
-                  className={`flex justify-between items-center p-2 rounded-lg cursor-pointer hover:bg-gray-100 ${
-                    activeChatId === chat.id
-                      ? "bg-blue-50 border border-blue-200"
-                      : ""
-                  }`}
-                  onClick={() => handleOpenChat(chat.id)}
-                >
+                  className={`flex justify-between items-center p-2 rounded-lg cursor-pointer hover:bg-gray-100`}
+                  onClick={() => handleOpenChat(chat.id)}>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate text-sm">
-                      {chat.title || "New Chat"}
-                    </div>
+                    <div className="font-medium truncate text-sm">{chat.title || 'New Chat'}</div>
                     <div className="text-xs text-gray-500 truncate">
-                      {chat.lastMessage || "No messages"}
+                      {chat.lastMessage || 'No messages'}
                     </div>
                   </div>
                   <button
                     onClick={(e) => handleDeleteChat(chat.id, e)}
                     className="ml-2 text-gray-400 hover:text-red-500 p-1"
-                    title="Delete chat"
-                  >
+                    title="Delete chat">
                     ×
                   </button>
                 </div>

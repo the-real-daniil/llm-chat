@@ -1,38 +1,46 @@
-"use client";
-import { useState } from "react";
-import PaperPlaneIcon from "../../assets/icons/paper-plane-icon";
-import Button from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import { useChat } from "@/hooks/useChat";
+'use client';
+import { useState } from 'react';
+import PaperPlaneIcon from '../../assets/icons/paper-plane-icon';
+import Button from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
+import { useHooksForChat } from '@/hooks/useHooksForChat';
+import { Message } from '@/types/chat';
 
 const MainEmptyState = () => {
-  const name = "Mauro Sicard";
-  const [areaTextValue, setAreaTextValue] = useState("");
+  const name = 'Mauro Sicard';
+  const [areaTextValue, setAreaTextValue] = useState('');
   const [isSending, setIsSending] = useState(false);
   const router = useRouter();
-  const { sendMessageWithText } = useChat();
-
-  const handleSend = async () => {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const { createNewChat } = useHooksForChat({
+    setMessages,
+    setIsSending,
+    setInputText: setAreaTextValue,
+  });
+  const handleSend = () => {
     const textToSend = areaTextValue.trim();
     if (!textToSend || isSending) return;
-
     setIsSending(true);
 
-    try {
-      const chatId = await sendMessageWithText(textToSend);
+    const newChatId = createNewChat();
 
-      if (chatId) {
-        router.push(`/chat?chat=${chatId}`);
-      } else {
-        router.push("/chat");
-      }
-    } finally {
-      setIsSending(false);
-    }
+    router.push(`/chats/${newChatId}`);
+
+    setTimeout(() => {
+      const event = new CustomEvent('firstMessageSended', {
+        detail: {
+          chatId: newChatId,
+          message: textToSend,
+        },
+        bubbles: true,
+      });
+
+      window.dispatchEvent(event);
+    }, 300);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
@@ -43,11 +51,8 @@ const MainEmptyState = () => {
       <div
         className={`flex flex-col items-center justify-center rounded-3xl
          w-[775px] h-[235px] p-11 border border-gray-400
-          bg-gradient-to-b from-white-200 via-purple-200 to-blue-200 shadow-lg`}
-      >
-        <h1 className="text-2xl text-gray-600 font-bold">
-          Welcome back, {name}
-        </h1>
+          bg-gradient-to-b from-white-200 via-purple-200 to-blue-200 shadow-lg`}>
+        <h1 className="text-2xl text-gray-600 font-bold">Welcome back, {name}</h1>
         <h4 className="text-gray-600 mt-2">Напиши мне, пожалуйста</h4>
         <div className="relative flex-1 w-full">
           <textarea
@@ -61,7 +66,7 @@ const MainEmptyState = () => {
           <Button
             label=""
             disabled={!areaTextValue.trim() || isSending}
-            className="absolute right-0 bottom-10"
+            className="absolute right-0 bottom-4 bg-white hover:bg-white cursor-pointer disabled:cursor-not-allowed "
             onClickButton={handleSend}
             icon={<PaperPlaneIcon />}
           />

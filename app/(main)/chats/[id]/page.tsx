@@ -1,6 +1,5 @@
-import DialogBox from "@/components/dialog-box";
-import MainHeader from "@/components/main-area/main-header";
-import SideBar from "@/components/side-bar";
+'use client';
+import DialogBox from '@/components/dialog-box';
 
 export default function ChatPage() {
   return (

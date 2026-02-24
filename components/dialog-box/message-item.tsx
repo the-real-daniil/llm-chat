@@ -1,40 +1,113 @@
-import { Message } from "@/types/chat";
-import { memo } from "react";
+import { Message } from '@/types/chat';
+import Button from '../ui/button';
+import CopyIcon from '@/assets/icons/copy-icon';
+import ReplayIcon from '@/assets/icons/reply-icon';
+import Image from 'next/image';
 
 interface MessageItemProps {
   message: Message;
+  handleResend: (message: Message) => void;
 }
 
-const MessageItem = memo(({ message }: MessageItemProps) => {
+const MessageItem = ({ message, handleResend }: MessageItemProps) => {
+  const handleCopy = async (message: Message) => {
+    const text = message.content.map((item) => item.text).join('');
+    try {
+      await navigator.clipboard.writeText(text);
+      alert('Скопировано в буфер!');
+    } catch (err) {
+      console.error('Не удалось скопировать', err);
+      alert('Не удалось скопировать');
+    }
+  };
+
   return (
     <div
+      data-sender={message.sender === 'user' ? 'user' : 'ai'}
       className={`flex items-start gap-3 px-4 py-2 max-w-full ${
-        message.sender === "ai" ? "border border-gray-200 rounded-lg" : ""
-      }`}
-    >
+        message.sender === 'ai' ? 'border border-gray-200 rounded-lg' : ''
+      }`}>
       <div className="flex-shrink-0 w-8 h-8">
-        <img
+        <Image
           src={message.avatar}
-          alt={message.sender === "user" ? "User avatar" : "AI avatar"}
+          width={4}
+          height={4}
+          alt={message.sender === 'user' ? 'User avatar' : 'AI avatar'}
           className="w-8 h-8 rounded-full object-cover border border-white shadow"
         />
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="font-medium text-sm text-gray-900">
-            {message.sender === "user" ? "Вы" : "AI"}
-          </span>
-          <span className="text-xs text-gray-500">{message.timestamp}</span>
+        <div className="flex justify-between items-center gap-2 mb-1">
+          <div>
+            <span className="font-medium text-sm text-gray-900">
+              {message.sender === 'user' ? 'You' : 'AI'}
+            </span>
+            <span className="text-xs text-gray-500">{message.timestamp}</span>
+          </div>
+          <div>
+            {message.sender === 'ai' && (
+              <div className="flex">
+                <Button
+                  label={''}
+                  className="p-1.5 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded text-blue-700 hover:text-gray-900"
+                  onClickButton={() => handleCopy(message)}
+                  icon={<CopyIcon />}
+                />
+                <Button
+                  label=""
+                  icon={<ReplayIcon />}
+                  onClickButton={() => handleResend(message)}
+                  className="p-1.5 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded text-blue-700 hover:text-gray-900 min-w-0 w-8 h-8 flex items-center justify-center"
+                />
+              </div>
+            )}
+          </div>
         </div>
-        <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap break-words">
-          {message.text}
-        </p>
+        <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap break-words">
+          {message.content.map((item, index) => {
+            if (item.type === 'text') {
+              return (
+                <div key={index} className="mb-1">
+                  {item.text}
+                </div>
+              );
+            }
+
+            if (item.type === 'image_url' && item.image_url?.url) {
+              return (
+                <div key={index} className="mt-2">
+                  <Image
+                    src={item.image_url.url}
+                    width={400}
+                    height={400}
+                    alt="Вложенное изображение"
+                    className="max-w-full h-auto rounded-lg border border-gray-200 shadow-sm"
+                    loading="lazy"
+                  />
+                </div>
+              );
+            }
+            if (item.type === 'file' && item.file?.file) {
+              return (
+                <div
+                  key={index}
+                  className="mt-2   p-3 bg-blue-50 border border-blue-200 rounded-lg shadow-sm max-w-xs">
+                  <span className="text-blue-600 text-lg">📄</span>
+                  <div className="flex justify-between">
+                    <span>{item.file.name}</span>
+                    <span>{(Number(item.file.size) / 1024 / 8).toFixed(1) + 'mb'}</span>
+                  </div>
+                </div>
+              );
+            }
+
+            return null;
+          })}
+        </div>
       </div>
     </div>
   );
-});
-
-MessageItem.displayName = "MessageItem";
+};
 
 export default MessageItem;

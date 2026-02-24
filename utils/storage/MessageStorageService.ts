@@ -1,5 +1,5 @@
-import { Message } from "@/types/chat";
-import { STORAGE_KEYS } from "../constants";
+import { Message } from '@/types/chat';
+import { STORAGE_KEYS } from '../constants';
 
 export interface ChatInfo {
   id: string;
@@ -8,7 +8,7 @@ export interface ChatInfo {
   lastMessage?: string;
   messageCount: number;
 }
-interface IStorge {
+interface IStorage {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
   removeItem(key: string): void;
@@ -17,7 +17,7 @@ interface IStorge {
   key(index: number): string | null;
 }
 
-const localStorageProvider: IStorge = {
+const localStorageProvider: IStorage = {
   getItem(key: string): string | null {
     return localStorage.getItem(key);
   },
@@ -37,10 +37,13 @@ const localStorageProvider: IStorge = {
     return localStorage.key(index);
   },
 };
-
+const getMessageText = (message: Message): string => {
+  const textContent = message.content?.find((item) => item.type === 'text');
+  return textContent?.text || '';
+};
 export class MessageStorageService {
-  private storage: IStorge;
-  constructor(storage: IStorge = localStorageProvider) {
+  private storage: IStorage;
+  constructor(storage: IStorage = localStorageProvider) {
     this.storage = storage;
   }
 
@@ -48,12 +51,9 @@ export class MessageStorageService {
     try {
       const key = `${STORAGE_KEYS.CHAT_PREFIX}${chatId}`;
       this.storage.setItem(key, JSON.stringify(messages));
-
       this.updateChatInfo(chatId, messages);
-
-      console.log(`Сохранено ${messages.length} сообщений для чата ${chatId}`);
     } catch (error) {
-      console.log("Ошибка сохранения в localStorage:", error);
+      console.log('Ошибка сохранения в localStorage:', error);
     }
   }
 
@@ -63,10 +63,7 @@ export class MessageStorageService {
 
       if (messages.length === 0) {
         const filteredChats = chats.filter((chat) => chat.id !== chatId);
-        this.storage.setItem(
-          STORAGE_KEYS.CHATS_LIST,
-          JSON.stringify(filteredChats)
-        );
+        this.storage.setItem(STORAGE_KEYS.CHATS_LIST, JSON.stringify(filteredChats));
         return;
       }
 
@@ -77,8 +74,7 @@ export class MessageStorageService {
           id: chatId,
           title: this.generateChatTitle(messages),
           updatedAt: Date.now(),
-          lastMessage:
-            messages.length > 0 ? messages[messages.length - 1].text : "",
+          lastMessage: messages.length > 0 ? getMessageText(messages[messages.length - 1]) : '',
           messageCount: messages.length,
         };
         chats.unshift(chatInfo);
@@ -86,7 +82,7 @@ export class MessageStorageService {
         chatInfo.title = this.generateChatTitle(messages);
         chatInfo.updatedAt = Date.now();
         chatInfo.lastMessage =
-          messages.length > 0 ? messages[messages.length - 1].text : "";
+          messages.length > 0 ? getMessageText(messages[messages.length - 1]) : '';
         chatInfo.messageCount = messages.length;
 
         const index = chats.indexOf(chatInfo);
@@ -98,17 +94,17 @@ export class MessageStorageService {
 
       this.storage.setItem(STORAGE_KEYS.CHATS_LIST, JSON.stringify(chats));
     } catch (error) {
-      console.error("Ошибка обновления информации о чате:", error);
+      console.error('Ошибка обновления информации о чате:', error);
     }
   }
 
   private generateChatTitle(messages: Message[]): string {
-    if (messages.length === 0) return "New Chat";
+    if (messages.length === 0) return 'New Chat';
 
-    const firstUserMessage = messages.find((msg) => msg.sender === "user");
+    const firstUserMessage = messages.find((msg) => msg.sender === 'user');
     if (firstUserMessage) {
-      const text = firstUserMessage.text;
-      return text.length > 30 ? text.substring(0, 30) + "..." : text;
+      const text = getMessageText(firstUserMessage);
+      return text.length > 30 ? text.substring(0, 30) + '...' : text;
     }
 
     return `Chat with ${messages.length} messages`;
@@ -120,20 +116,17 @@ export class MessageStorageService {
       const chats: ChatInfo[] = data ? JSON.parse(data) : [];
 
       const validChats = chats.filter((chat) => {
-        const messages = this.loadMessages(chat.id);
+        const messages = this.loadMessagesFromStorage(chat.id);
         return messages.length > 0;
       });
 
       if (validChats.length !== chats.length) {
-        this.storage.setItem(
-          STORAGE_KEYS.CHATS_LIST,
-          JSON.stringify(validChats)
-        );
+        this.storage.setItem(STORAGE_KEYS.CHATS_LIST, JSON.stringify(validChats));
       }
 
       return validChats;
     } catch (error) {
-      console.error("Ошибка загрузки списка чатов:", error);
+      console.error('Ошибка загрузки списка чатов:', error);
       return [];
     }
   }
@@ -145,39 +138,20 @@ export class MessageStorageService {
 
       const chats = this.getChatsList();
       const filteredChats = chats.filter((chat) => chat.id !== chatId);
-      this.storage.setItem(
-        STORAGE_KEYS.CHATS_LIST,
-        JSON.stringify(filteredChats)
-      );
+      this.storage.setItem(STORAGE_KEYS.CHATS_LIST, JSON.stringify(filteredChats));
     } catch (error) {
-      console.error("Ошибка удаления чата:", error);
+      console.error('Ошибка удаления чата:', error);
     }
   }
 
-  loadMessages(chatId: string): Message[] {
+  loadMessagesFromStorage(chatId: string): Message[] {
     try {
       const key = `${STORAGE_KEYS.CHAT_PREFIX}${chatId}`;
       const data = this.storage.getItem(key);
       return data ? JSON.parse(data) : [];
     } catch (err) {
-      console.error("Ошибка загрузки из this.storage:", err);
+      console.error('Ошибка загрузки из this.storage:', err);
       return [];
     }
-  }
-
-  saveActiveChat(chatId: string): void {
-    this.storage.setItem(STORAGE_KEYS.ACTIVE_CHAT, chatId);
-  }
-
-  getActiveChat(): string | null {
-    return this.storage.getItem(STORAGE_KEYS.ACTIVE_CHAT);
-  }
-
-  clearActiveChat(): void {
-    this.storage.removeItem(STORAGE_KEYS.ACTIVE_CHAT);
-  }
-
-  clearLS(): void {
-    this.storage.clear();
   }
 }
