@@ -1,3 +1,4 @@
+import { LogoutButton } from '@/utils/auth-logic/LogoutButton';
 import ClearIcon from '../../assets/icons/clear-icon';
 import SettingsIcon from '../../assets/icons/settings-icon';
 
@@ -14,6 +15,7 @@ const ProfileBar = () => {
         <SettingsIcon />
         <ClearIcon />
       </div>
+      <LogoutButton />
     </div>
   );
 };

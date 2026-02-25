@@ -4,62 +4,72 @@ import { MessagesList } from './messages-list';
 import { MessageInput } from './message-input';
 import MainHeader from '../main-area/main-header';
 import { useParams } from 'next/navigation';
-import { useStorage } from '@/utils/storage/storageContext';
-import { Message } from '@/types/chat';
-import { useHooksForChat } from '@/hooks/useHooksForChat';
+import { useChats } from '@/hooks/useMessages';
+import { Attachment, Message } from '@/types/chat';
 import { useFileUtils } from '@/hooks/useFileUtils';
 
 const DialogBox = () => {
-  const storage = useStorage();
   const params = useParams();
   const chatId = params.id as string;
-  const [messages, setMessages] = useState<Message[]>(() =>
-    storage.loadMessagesFromStorage(chatId),
-  );
   const [inputText, setInputText] = useState('');
-  const [isSending, setIsSending] = useState(false);
+
+  const { messages, isSending, sendMessage } = useChats();
+  const { extractFilesFromMessage, getMessageText, findPreviousUserMessage } = useFileUtils();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-    storage.saveMessages(chatId, messages);
   }, [messages]);
-
-  const { handleSendMessage } = useHooksForChat({
-    setMessages,
-    setIsSending,
-    setInputText,
-  });
-  const { extractFilesFromMessage, getMessageText, findPreviousUserMessage, dataUrlToFile } =
-    useFileUtils();
+  const handleSendMessage = async (chatId: string, content: string, attachments?: Attachment[]) => {
+    await sendMessage(chatId, content, {
+      attachments: attachments,
+      model: 'qwen/qwen3-vl-235b-a22b-thinking',
+      temperature: 0.7,
+      maxTokens: 1024,
+    });
+  };
   useEffect(() => {
     const handleFirstMessage = (event: CustomEvent) => {
-      if (event.detail.chatId !== chatId) {
-        return;
-      }
-
-      handleSendMessage(event.detail.message, []);
-
-      setTimeout(() => {
-        window.dispatchEvent(new Event('storage'));
-      }, 100);
+      handleSendMessage(event.detail.chatId, event.detail.message);
     };
+
     window.addEventListener('firstMessageSended', handleFirstMessage as EventListener);
+
     return () => {
       window.removeEventListener('firstMessageSended', handleFirstMessage as EventListener);
     };
-  }, []);
-
+  }, [chatId]);
   const handleResend = async (message: Message) => {
     const userMessage = findPreviousUserMessage(messages, message.id);
+
     if (!userMessage) {
+      console.error('Не найдено предыдущее сообщение пользователя');
       return;
     }
+
     const text = getMessageText(userMessage);
+
     const files = extractFilesFromMessage(userMessage);
-    handleSendMessage(text, files);
+
+    await sendMessage(chatId, text, {
+      attachments: files.map((file) => ({
+        name: file.name,
+        type: file.type.startsWith('image/')
+          ? 'image'
+          : file.type.startsWith('audio/')
+            ? 'audio'
+            : 'file',
+        mimeType: file.type,
+        size: file.size,
+
+        status: 'pending',
+      })),
+      model: 'qwen/qwen3-vl-235b-a22b-thinking',
+      temperature: 0.7,
+      maxTokens: 1024,
+    });
   };
 
   return (
@@ -78,7 +88,7 @@ const DialogBox = () => {
           inputText={inputText}
           isSending={isSending}
           onInputChange={setInputText}
-          handleSendWithFilesAndText={handleSendMessage}
+          sendMessage={handleSendMessage}
         />
       </div>
     </div>

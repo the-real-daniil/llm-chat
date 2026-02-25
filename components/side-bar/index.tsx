@@ -2,32 +2,29 @@
 import Button from '../ui/button';
 import ProfileBar from './profile-bar';
 import PlusIcon from '@/assets/icons/plus-icon';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { ChatInfo } from '@/utils/storage/MessageStorageService';
-import { useStorage } from '@/utils/storage/storageContext';
+
+import { Chat } from '@/types/chat';
+import { useLoadChats } from '@/hooks/useLoadChat';
 
 const SideBar = () => {
-  const storage = useStorage();
   const router = useRouter();
-  const params = useParams();
-  const nowChatIt = params.id as string;
-  const [chats, setChats] = useState<ChatInfo[]>([]);
-
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const { loadChats } = useLoadChats({ setChats });
   useEffect(() => {
-    const loadChats = () => {
-      const loadedChats = storage.getChatsList();
-      setChats(loadedChats);
+    const load = async () => {
+      try {
+        const cursor = await loadChats();
+        setNextCursor(cursor);
+      } finally {
+      }
     };
-    loadChats();
-
-    const handleStorageChange = () => {
-      loadChats();
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, [storage]);
+    load();
+    window.addEventListener('updateChats', load);
+    return () => window.removeEventListener('updateChats', load);
+  }, [loadChats]);
 
   const handleNewChat = () => {
     router.push('/');
@@ -36,19 +33,12 @@ const SideBar = () => {
   const handleOpenChat = (chatId: string) => {
     router.push(`/chats/${chatId}`);
   };
+  const handleLoadMore = async () => {
+    if (!nextCursor) return;
 
-  const handleDeleteChat = (chatId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    storage.deleteChat(chatId);
-
-    const updatedChats = storage.getChatsList();
-    setChats(updatedChats);
-
-    if (nowChatIt === chatId) {
-      router.push('/');
-    }
+    const cursor = await loadChats(nextCursor);
+    setNextCursor(cursor);
   };
-
   return (
     <div className="w-[300px] h-full p-4 flex flex-col border-r border-gray-200">
       <ProfileBar />
@@ -68,22 +58,20 @@ const SideBar = () => {
                   <div className="flex-1 min-w-0">
                     <div className="font-medium truncate text-sm">{chat.title || 'New Chat'}</div>
                     <div className="text-xs text-gray-500 truncate">
-                      {chat.lastMessage || 'No messages'}
+                      {chat.lastMessagePreview || 'No messages'}
                     </div>
                   </div>
-                  <button
-                    onClick={(e) => handleDeleteChat(chat.id, e)}
-                    className="ml-2 text-gray-400 hover:text-red-500 p-1"
-                    title="Delete chat">
-                    ×
-                  </button>
                 </div>
               ))}
             </div>
           )}
         </div>
       </div>
-
+      {!!nextCursor && (
+        <div className="text-black w-[300px]">
+          <Button label={'Load more chats..'} onClickButton={handleLoadMore} />
+        </div>
+      )}
       <Button
         label="Start new chat"
         icon={<PlusIcon />}

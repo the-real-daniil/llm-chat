@@ -3,34 +3,28 @@ import { useState } from 'react';
 import PaperPlaneIcon from '../../assets/icons/paper-plane-icon';
 import Button from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { useHooksForChat } from '@/hooks/useHooksForChat';
-import { Message } from '@/types/chat';
+import { useChats } from '@/hooks/useMessages';
 
 const MainEmptyState = () => {
   const name = 'Mauro Sicard';
   const [areaTextValue, setAreaTextValue] = useState('');
   const [isSending, setIsSending] = useState(false);
   const router = useRouter();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const { createNewChat } = useHooksForChat({
-    setMessages,
-    setIsSending,
-    setInputText: setAreaTextValue,
-  });
-  const handleSend = () => {
+  const { createChat } = useChats();
+  const handleSend = async () => {
     const textToSend = areaTextValue.trim();
     if (!textToSend || isSending) return;
     setIsSending(true);
 
-    const newChatId = createNewChat();
+    const newChatId = await createChat();
 
     router.push(`/chats/${newChatId}`);
 
     setTimeout(() => {
       const event = new CustomEvent('firstMessageSended', {
         detail: {
-          chatId: newChatId,
           message: textToSend,
+          chatId: newChatId,
         },
         bubbles: true,
       });

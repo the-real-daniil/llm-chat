@@ -1,8 +1,10 @@
-import { Message } from '@/types/chat';
+import { Message, Attachment } from '@/types/chat';
 import Button from '../ui/button';
 import CopyIcon from '@/assets/icons/copy-icon';
 import ReplayIcon from '@/assets/icons/reply-icon';
 import Image from 'next/image';
+import { useState } from 'react';
+import { useFileUtils } from '@/hooks/useFileUtils';
 
 interface MessageItemProps {
   message: Message;
@@ -10,8 +12,10 @@ interface MessageItemProps {
 }
 
 const MessageItem = ({ message, handleResend }: MessageItemProps) => {
-  const handleCopy = async (message: Message) => {
-    const text = message.content.map((item) => item.text).join('');
+  const [expandedImage, setExpandedImage] = useState<string | null>(null);
+  const { getImageUrl, isImage, isFile, getFileIcon, getFileSize } = useFileUtils();
+  const handleCopy = async () => {
+    const text = message.content;
     try {
       await navigator.clipboard.writeText(text);
       alert('Скопировано в буфер!');
@@ -21,91 +25,124 @@ const MessageItem = ({ message, handleResend }: MessageItemProps) => {
     }
   };
 
+  const avatarSrc = message.role === 'user' ? '/profile-photo.jpg' : '/ai-photo.jpg';
+  const avatarAlt = message.role === 'user' ? 'User avatar' : 'AI avatar';
+  const formattedDate = new Date(message.createdAt).toLocaleTimeString();
+  const images = message.attachments?.filter(isImage) || [];
+  const files = message.attachments?.filter(isFile) || [];
   return (
     <div
-      data-sender={message.sender === 'user' ? 'user' : 'ai'}
+      data-sender={message.role === 'user' ? 'user' : 'ai'}
       className={`flex items-start gap-3 px-4 py-2 max-w-full ${
-        message.sender === 'ai' ? 'border border-gray-200 rounded-lg' : ''
+        message.role === 'assistant' ? 'border border-gray-200 rounded-lg' : ''
       }`}>
       <div className="flex-shrink-0 w-8 h-8">
         <Image
-          src={message.avatar}
-          width={4}
-          height={4}
-          alt={message.sender === 'user' ? 'User avatar' : 'AI avatar'}
+          src={avatarSrc}
+          width={32}
+          height={32}
+          alt={avatarAlt}
           className="w-8 h-8 rounded-full object-cover border border-white shadow"
         />
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-center gap-2 mb-1">
-          <div>
+          <div className="flex items-center gap-2">
             <span className="font-medium text-sm text-gray-900">
-              {message.sender === 'user' ? 'You' : 'AI'}
+              {message.role === 'user' ? 'You' : 'AI'}
             </span>
-            <span className="text-xs text-gray-500">{message.timestamp}</span>
+            <span className="text-xs text-gray-500">{formattedDate}</span>
           </div>
-          <div>
-            {message.sender === 'ai' && (
-              <div className="flex">
-                <Button
-                  label={''}
-                  className="p-1.5 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded text-blue-700 hover:text-gray-900"
-                  onClickButton={() => handleCopy(message)}
-                  icon={<CopyIcon />}
-                />
-                <Button
-                  label=""
-                  icon={<ReplayIcon />}
-                  onClickButton={() => handleResend(message)}
-                  className="p-1.5 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded text-blue-700 hover:text-gray-900 min-w-0 w-8 h-8 flex items-center justify-center"
-                />
-              </div>
-            )}
-          </div>
+          {message.role === 'assistant' && (
+            <div className="flex gap-1">
+              <Button
+                label=""
+                className="p-1.5 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded text-blue-700 hover:text-gray-900"
+                onClickButton={handleCopy}
+                icon={<CopyIcon />}
+              />
+              <Button
+                label=""
+                icon={<ReplayIcon />}
+                onClickButton={() => handleResend(message)}
+                className="p-1.5 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded text-blue-700 hover:text-gray-900 min-w-0 w-8 h-8 flex items-center justify-center"
+              />
+            </div>
+          )}
         </div>
-        <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap break-words">
-          {message.content.map((item, index) => {
-            if (item.type === 'text') {
-              return (
-                <div key={index} className="mb-1">
-                  {item.text}
-                </div>
-              );
-            }
 
-            if (item.type === 'image_url' && item.image_url?.url) {
+        {message.content && (
+          <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap break-words mb-3">
+            {message.content}
+          </div>
+        )}
+
+        {images.length > 0 && (
+          <div className={`grid gap-2 mb-3 ${images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            {images.map((img, index) => {
+              const imgUrl = getImageUrl(img);
+
               return (
-                <div key={index} className="mt-2">
+                <div
+                  key={index}
+                  className="relative cursor-pointer group"
+                  onClick={() => setExpandedImage(imgUrl)}>
                   <Image
-                    src={item.image_url.url}
+                    src={imgUrl}
                     width={400}
-                    height={400}
-                    alt="Вложенное изображение"
-                    className="max-w-full h-auto rounded-lg border border-gray-200 shadow-sm"
+                    height={300}
+                    alt={'Image'}
+                    className="rounded-lg border border-gray-200 shadow-sm object-cover w-full h-auto max-h-64"
                     loading="lazy"
                   />
                 </div>
               );
-            }
-            if (item.type === 'file' && item.file?.file) {
-              return (
-                <div
-                  key={index}
-                  className="mt-2   p-3 bg-blue-50 border border-blue-200 rounded-lg shadow-sm max-w-xs">
-                  <span className="text-blue-600 text-lg">📄</span>
-                  <div className="flex justify-between">
-                    <span>{item.file.name}</span>
-                    <span>{(Number(item.file.size) / 1024 / 8).toFixed(1) + 'mb'}</span>
-                  </div>
-                </div>
-              );
-            }
+            })}
+          </div>
+        )}
 
-            return null;
-          })}
-        </div>
+        {files.length > 0 && (
+          <div className="space-y-2 mb-2">
+            {files.map((file, index) => (
+              <a
+                key={index}
+                href={getImageUrl(file) || '#'}
+                download={file.name}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors max-w-md">
+                <span className="text-2xl">{getFileIcon(file)}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-sm text-gray-900 truncate">
+                    {file.name || 'Файл'}
+                  </div>
+                  {file.size && (
+                    <div className="text-xs text-gray-500">{getFileSize(file.size)}</div>
+                  )}
+                </div>
+                <span className="text-blue-600 text-sm">↓</span>
+              </a>
+            ))}
+          </div>
+        )}
+
+        {message.status === 'pending' && (
+          <div className="text-xs text-gray-500 flex items-center gap-1 mt-2">
+            <span className="animate-pulse">⏳</span> Отправка...
+          </div>
+        )}
+        {message.status === 'failed' && (
+          <div className="text-xs text-red-500 flex items-center gap-1 mt-2">
+            <span>❌</span> Ошибка отправки
+          </div>
+        )}
       </div>
+      {message.status === 'failed' && (
+        <div className="text-xs text-red-500 flex items-center gap-1 mt-2">
+          <span>❌</span> Ошибка отправки
+        </div>
+      )}
     </div>
   );
 };

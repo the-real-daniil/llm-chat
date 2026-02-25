@@ -1,70 +1,107 @@
 import { useCallback } from 'react';
-import { Message } from '@/types/chat';
+import { Message, Attachment } from '@/types/chat';
 
 export const useFileUtils = () => {
-  const extractFilesFromMessage = useCallback((userMessage: Message): File[] => {
-    const files: File[] = [];
-
-    userMessage.content.forEach((item) => {
-      if (item.file?.file instanceof File) {
-        files.push(item.file.file);
-        return;
+  const attachmentToFile = useCallback((attachment: Attachment): File | null => {
+    try {
+      if (attachment.url && attachment.url.startsWith('data:')) {
+        return dataUrlToFile(attachment.url, 'file');
       }
 
-      if (item.file?.name && item.file?.base64) {
-        try {
-          const dataUrl = `data:${item.file.type};base64,${item.file.base64}`;
-          const file = dataUrlToFile(dataUrl, item.file.name);
-          if (file) files.push(file);
-        } catch (err) {
-          console.error('❌ не удалось воссоздать файл из base64', item.file.name, err);
-        }
-        return;
-      }
-
-      if (item.image_url?.url?.startsWith('data:')) {
-        try {
-          const url = item.image_url.url;
-          const mimeMatch = url.match(/data:([^;]+);/);
-          const ext = mimeMatch ? mimeMatch[1].split('/').pop() : 'png';
-          const filename = `image.${ext}`;
-
-          const file = dataUrlToFile(url, filename);
-          if (file) files.push(file);
-        } catch (err) {
-          console.error('❌ Не удалось создать файл из image_url:', err);
-        }
-      }
-    });
-
-    return files;
-  }, []);
-
-  const getMessageText = useCallback((message: Message): string => {
-    return message.content
-      .filter((item) => item.type === 'text')
-      .map((item) => item.text)
-      .join('');
-  }, []);
-
-  const findPreviousUserMessage = useCallback(
-    (messages: Message[], currentMessageId: string | number) => {
-      const currentIndex = messages.findIndex((m) => m.id === currentMessageId);
-
-      if (currentIndex === -1) {
-        return null;
-      }
-
-      for (let i = currentIndex - 1; i >= 0; i--) {
-        if (messages[i].sender === 'user') {
-          return messages[i];
-        }
+      if (attachment.data && attachment.mimeType) {
+        const dataUrl = `data:${attachment.mimeType};base64,${attachment.data}`;
+        return dataUrlToFile(dataUrl, 'file');
       }
 
       return null;
+    } catch (err) {
+      console.error('❌ Ошибка конвертации attachment в File:', err);
+      return null;
+    }
+  }, []);
+
+  const getImageUrl = useCallback((attachment: Attachment): string => {
+    if (attachment.url) {
+      return attachment.url;
+    }
+
+    if (attachment.data && attachment.mimeType) {
+      return `data:${attachment.mimeType};base64,${attachment.data}`;
+    }
+
+    return '';
+  }, []);
+
+  const isImage = useCallback((attachment: Attachment): boolean => {
+    return attachment.type === 'image' || attachment.mimeType?.startsWith('image/');
+  }, []);
+
+  const isAudio = useCallback((attachment: Attachment): boolean => {
+    return attachment.type === 'audio' || attachment.mimeType?.startsWith('audio/');
+  }, []);
+
+  const isFile = useCallback((attachment: Attachment): boolean => {
+    return (
+      attachment.type === 'file' ||
+      (!attachment.mimeType?.startsWith('image/') && !attachment.mimeType?.startsWith('audio/'))
+    );
+  }, []);
+
+  const getFileIcon = useCallback(
+    (attachment: Attachment): string => {
+      if (isAudio(attachment)) return '🎵';
+      if (attachment.mimeType?.includes('pdf')) return '📄';
+      if (attachment.mimeType?.includes('word') || attachment.mimeType?.includes('document'))
+        return '📝';
+      if (attachment.mimeType?.includes('text')) return '📃';
+      if (attachment.mimeType?.includes('zip') || attachment.mimeType?.includes('rar')) return '📦';
+      return '📎';
     },
-    [],
+    [isAudio],
   );
+
+  const getFileSize = useCallback((size?: number): string => {
+    if (!size) return '';
+
+    if (size < 1024) return `${size} B`;
+    if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+    return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+  }, []);
+
+  const extractFilesFromMessage = useCallback(
+    (userMessage: Message): File[] => {
+      const files: File[] = [];
+
+      userMessage.attachments?.forEach((attachment) => {
+        const file = attachmentToFile(attachment);
+        if (file) files.push(file);
+      });
+
+      return files;
+    },
+    [attachmentToFile],
+  );
+
+  const getMessageText = useCallback((message: Message): string => {
+    return message.content;
+  }, []);
+
+  const findPreviousUserMessage = useCallback((messages: Message[], currentMessageId: string) => {
+    const currentIndex = messages.findIndex((m) => m.id === currentMessageId);
+
+    if (currentIndex === -1) {
+      return null;
+    }
+
+    for (let i = currentIndex - 1; i >= 0; i--) {
+      if (messages[i].role === 'user') {
+        return messages[i];
+      }
+    }
+
+    return null;
+  }, []);
+
   const dataUrlToFile = (dataUrl: string, filename: string): File | null => {
     try {
       const matches = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
@@ -98,10 +135,18 @@ export const useFileUtils = () => {
       return null;
     }
   };
+
   return {
     extractFilesFromMessage,
     getMessageText,
     findPreviousUserMessage,
     dataUrlToFile,
+    attachmentToFile,
+    getImageUrl,
+    isImage,
+    isAudio,
+    isFile,
+    getFileIcon,
+    getFileSize,
   };
 };
