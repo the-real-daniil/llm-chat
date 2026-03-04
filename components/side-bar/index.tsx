@@ -2,50 +2,26 @@
 import Button from '../ui/button';
 import ProfileBar from './profile-bar';
 import PlusIcon from '@/assets/icons/plus-icon';
-import { useParams, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { ChatInfo } from '@/utils/storage/MessageStorageService';
-import { useStorage } from '@/utils/storage/storageContext';
+import { useRouter } from 'next/navigation';
+
+import { Chat } from '@/types/chat';
+import { useChatsInfiniteQuery, useCreateChatMutation } from '@/hooks/queries/useChatsQuery';
 
 const SideBar = () => {
-  const storage = useStorage();
   const router = useRouter();
-  const params = useParams();
-  const nowChatIt = params.id as string;
-  const [chats, setChats] = useState<ChatInfo[]>([]);
-
-  useEffect(() => {
-    const loadChats = () => {
-      const loadedChats = storage.getChatsList();
-      setChats(loadedChats);
-    };
-    loadChats();
-
-    const handleStorageChange = () => {
-      loadChats();
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, [storage]);
-
+  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, error } =
+    useChatsInfiniteQuery();
+  const { mutate: createChat, isPending: isCreating } = useCreateChatMutation();
+  const chats: Chat[] = data?.pages.flatMap((page) => page.data) || [];
   const handleNewChat = () => {
     router.push('/');
   };
-
   const handleOpenChat = (chatId: string) => {
     router.push(`/chats/${chatId}`);
   };
-
-  const handleDeleteChat = (chatId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    storage.deleteChat(chatId);
-
-    const updatedChats = storage.getChatsList();
-    setChats(updatedChats);
-
-    if (nowChatIt === chatId) {
-      router.push('/');
+  const handleLoadMore = () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
     }
   };
 
@@ -56,38 +32,51 @@ const SideBar = () => {
       <div className="flex-1 overflow-auto mt-4">
         <div className="mb-4">
           <h3 className="font-semibold text-gray-700 mb-2">Chat History</h3>
-          {chats.length === 0 ? (
+
+          {isLoading ? (
+            <p className="text-gray-500 text-sm italic">Loading chats...</p>
+          ) : chats.length === 0 ? (
             <p className="text-gray-500 text-sm italic">No chats yet</p>
           ) : (
             <div className="space-y-1">
               {chats.map((chat) => (
                 <div
                   key={chat.id}
-                  className={`flex justify-between items-center p-2 rounded-lg cursor-pointer hover:bg-gray-100`}
+                  className="flex justify-between items-center p-2 rounded-lg cursor-pointer hover:bg-gray-100"
                   onClick={() => handleOpenChat(chat.id)}>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium truncate text-sm">{chat.title || 'New Chat'}</div>
                     <div className="text-xs text-gray-500 truncate">
-                      {chat.lastMessage || 'No messages'}
+                      {chat.lastMessagePreview || 'No messages'}
                     </div>
                   </div>
-                  <button
-                    onClick={(e) => handleDeleteChat(chat.id, e)}
-                    className="ml-2 text-gray-400 hover:text-red-500 p-1"
-                    title="Delete chat">
-                    ×
-                  </button>
                 </div>
               ))}
+
+              {isFetchingNextPage && (
+                <p className="text-gray-400 text-sm text-center py-2">Loading more...</p>
+              )}
             </div>
           )}
         </div>
       </div>
 
+      {hasNextPage && (
+        <div className="px-4 pb-2">
+          <Button
+            label={isFetchingNextPage ? 'Loading...' : 'Load more chats'}
+            onClickButton={handleLoadMore}
+            disabled={isFetchingNextPage}
+            className="w-full text-sm"
+          />
+        </div>
+      )}
+
       <Button
-        label="Start new chat"
+        label={isCreating ? 'Creating...' : 'Start new chat'}
         icon={<PlusIcon />}
         onClickButton={handleNewChat}
+        disabled={isCreating}
         className="h-10 w-full mt-4"
       />
     </div>
