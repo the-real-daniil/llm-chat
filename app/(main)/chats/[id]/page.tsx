@@ -1,4 +1,3 @@
-'use client';
 import DialogBox from '@/components/dialog-box';
 
 export default function ChatPage() {

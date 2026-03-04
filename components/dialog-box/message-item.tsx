@@ -1,10 +1,9 @@
-import { Message, Attachment } from '@/types/chat';
+import { Message } from '@/types/chat';
 import Button from '../ui/button';
 import CopyIcon from '@/assets/icons/copy-icon';
 import ReplayIcon from '@/assets/icons/reply-icon';
 import Image from 'next/image';
-import { useState } from 'react';
-import { useFileUtils } from '@/hooks/useFileUtils';
+import { getFileIcon, getFileSize, getImageUrl, isFile, isImage } from '@/utils/file-utils';
 
 interface MessageItemProps {
   message: Message;
@@ -12,16 +11,14 @@ interface MessageItemProps {
 }
 
 const MessageItem = ({ message, handleResend }: MessageItemProps) => {
-  const [expandedImage, setExpandedImage] = useState<string | null>(null);
-  const { getImageUrl, isImage, isFile, getFileIcon, getFileSize } = useFileUtils();
   const handleCopy = async () => {
     const text = message.content;
     try {
       await navigator.clipboard.writeText(text);
-      alert('Скопировано в буфер!');
+      console.log('Скопировано в буфер!');
     } catch (err) {
       console.error('Не удалось скопировать', err);
-      alert('Не удалось скопировать');
+      console.log('Не удалось скопировать');
     }
   };
 
@@ -84,10 +81,7 @@ const MessageItem = ({ message, handleResend }: MessageItemProps) => {
               const imgUrl = getImageUrl(img);
 
               return (
-                <div
-                  key={index}
-                  className="relative cursor-pointer group"
-                  onClick={() => setExpandedImage(imgUrl)}>
+                <div key={index} className="relative cursor-pointer group">
                   <Image
                     src={imgUrl}
                     width={400}

@@ -62,9 +62,9 @@ export const MessageInput = ({
           mimeType: file.type,
           data: base64,
           name: file.name,
-          size: file.size, 
-          url: base64Data, 
-          status: 'pending', 
+          size: file.size,
+          url: base64Data,
+          status: 'pending',
         };
 
         resolve(attachment);
@@ -85,13 +85,6 @@ export const MessageInput = ({
       e.preventDefault();
       handleSendMessage();
     }
-  };
-  const getFileIcon = (type: string) => {
-    if (type.includes('image')) return '🖼️';
-    if (type.includes('pdf')) return '📄';
-    if (type.includes('word') || type.includes('document')) return '📝';
-    if (type.includes('audio')) return '🎵';
-    return '📎';
   };
 
   return (
@@ -116,11 +109,6 @@ export const MessageInput = ({
                   <div
                     key={index}
                     className="text-xs bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg flex items-center gap-2">
-                    {getFileIcon(attachment.mimeType)}
-                    <span className="font-medium truncate max-w-[150px]">
-                      {fileToAttachment.name}
-                    </span>
-
                     <button
                       onClick={() => removeAttachment(index)}
                       className="text-gray-500 hover:text-red-500 text-sm ml-1"

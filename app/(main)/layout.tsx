@@ -1,31 +1,27 @@
 'use client';
 
 import SideBar from '@/components/side-bar';
-import { AuthLogic } from '@/utils/auth-logic/auth-logiс';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useRequireAuth } from '@/hooks/queries/useAuthQuery';
 
-const Page = ({
+export default function MainLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) => {
-  const router = useRouter();
-  useEffect(() => {
-    const checkAuth = async () => {
-      const isLoggedIn = await AuthLogic.isLoggedIn();
-      if (!isLoggedIn) {
-        router.push('/login');
-      }
-    };
+}>) {
+  const { isLoading } = useRequireAuth();
 
-    checkAuth();
-  }, [router]);
+  if (isLoading) {
+    return (
+      <div className="h-screen bg-gray-100 flex items-center justify-center">
+        <div>Загрузка...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen bg-gray-100 flex p-3">
       <SideBar />
       {children}
     </div>
   );
-};
-export default Page;
+}

@@ -3,34 +3,28 @@ import { useState } from 'react';
 import PaperPlaneIcon from '../../assets/icons/paper-plane-icon';
 import Button from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { useChats } from '@/hooks/useMessages';
+import { useCreateChatMutation } from '@/hooks/queries/useChatsQuery';
+import { useQueryClient } from '@tanstack/react-query';
 
 const MainEmptyState = () => {
   const name = 'Mauro Sicard';
   const [areaTextValue, setAreaTextValue] = useState('');
   const [isSending, setIsSending] = useState(false);
   const router = useRouter();
-  const { createChat } = useChats();
+  const queryClient = useQueryClient();
+  const { mutate: createChat, isPending: isCreating } = useCreateChatMutation();
   const handleSend = async () => {
     const textToSend = areaTextValue.trim();
-    if (!textToSend || isSending) return;
+    if (!textToSend || isSending || isCreating) return;
     setIsSending(true);
 
-    const newChatId = await createChat();
-
-    router.push(`/chats/${newChatId}`);
-
-    setTimeout(() => {
-      const event = new CustomEvent('firstMessageSended', {
-        detail: {
-          message: textToSend,
-          chatId: newChatId,
-        },
-        bubbles: true,
-      });
-
-      window.dispatchEvent(event);
-    }, 300);
+    createChat(undefined, {
+      onSuccess: (newChat) => {
+        queryClient.setQueryData(['pendingMessage', newChat.id], textToSend);
+        router.push(`/chats/${newChat.id}`);
+      },
+      onError: () => setIsSending(false),
+    });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

@@ -1,31 +1,34 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { AuthLogic } from '@/utils/auth-logic/auth-logiс';
 import Button from '@/components/ui/button';
+import { useAuth, useRedirectIfAuthenticated } from '@/hooks/queries/useAuthQuery';
+import { useState } from 'react';
 
 export default function LoginPage() {
-  const router = useRouter();
+  const [error, setError] = useState('');
+  const { login, isLoading: authLoading } = useAuth();
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const isLoggedIn = await AuthLogic.isLoggedIn();
-      if (isLoggedIn) {
-        router.push('/');
-      }
-    };
-
-    checkAuth();
-  }, [router]);
+  useRedirectIfAuthenticated();
 
   const handleLogin = () => {
-    AuthLogic.initiateAuthFlow();
+    try {
+      login();
+    } catch (err) {
+      setError('Ошибка при подготовке авторизации: ' + (err as Error).message);
+    }
   };
 
   return (
-    <div className="flex justify-center items-center h-screen">
-      <Button label={'Войти'} onClickButton={handleLogin} />
+    <div className="w-full min-h-screen flex items-center justify-center p-4">
+      <div className="max-w-md w-full space-y-6">
+        <Button
+          label="Войти через OpenRouter"
+          className="justify-center w-full h-[42px]"
+          onClickButton={handleLogin}
+          disabled={authLoading}
+        />
+        {error && <div className="text-red-500 text-sm text-center">{error}</div>}
+      </div>
     </div>
   );
 }
